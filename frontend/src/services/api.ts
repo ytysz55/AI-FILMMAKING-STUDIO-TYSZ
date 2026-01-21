@@ -37,11 +37,15 @@ async function fetchApi<T>(
 
 // ==================== PROJECT API ====================
 export const projectApi = {
-    // Proje oluştur
-    create: (name: string, duration: number = 30) =>
+    // Proje oluştur (metodoloji seçimiyle)
+    create: (name: string, duration: number = 30, methodology: string = 'save_the_cat') =>
         fetchApi<{ id: string; name: string; message: string }>('/projects', {
             method: 'POST',
-            body: JSON.stringify({ name, target_duration_minutes: duration }),
+            body: JSON.stringify({
+                name,
+                target_duration_minutes: duration,
+                methodology: methodology
+            }),
         }),
 
     // Projeleri listele
@@ -55,6 +59,41 @@ export const projectApi = {
     // Proje sil
     delete: (projectId: string) =>
         fetchApi<{ success: boolean }>(`/projects/${projectId}`, { method: 'DELETE' }),
+};
+
+// ==================== METHODOLOGY API ====================
+export const methodologyApi = {
+    // Tüm metodolojileri listele
+    list: () =>
+        fetchApi<{
+            methodologies: Array<{
+                id: string;
+                name: string;
+                author: string;
+                description: string;
+                best_for: string[];
+                step_count: number;
+            }>
+        }>('/methodologies'),
+
+    // Belirli metodoloji detayı
+    get: (methodologyId: string) =>
+        fetchApi<{
+            id: string;
+            name: string;
+            author: string;
+            description: string;
+            best_for: string[];
+            step_count: number;
+            steps: Array<{
+                number: number;
+                name: string;
+                english_name: string;
+                description: string;
+                percentage_of_story: number;
+                act: number;
+            }>;
+        }>(`/methodologies/${methodologyId}`),
 };
 
 // ==================== SOURCE API ====================

@@ -1,5 +1,32 @@
 // API ve Model Tipleri
 
+// ==================== METODOLOJİ ====================
+export type StoryMethodology =
+    | 'save_the_cat'
+    | 'syd_field'
+    | 'truby'
+    | 'heros_journey'
+    | 'story_circle';
+
+export interface MethodologyStep {
+    number: number;
+    name: string;
+    english_name: string;
+    description: string;
+    percentage_of_story: number;
+    act: number;
+}
+
+export interface Methodology {
+    id: StoryMethodology;
+    name: string;
+    author: string;
+    description: string;
+    best_for: string[];
+    step_count: number;
+    steps?: MethodologyStep[];
+}
+
 // ==================== PROJE ====================
 export interface Project {
     id: string;
@@ -16,6 +43,7 @@ export interface Project {
 export interface ProjectConfig {
     target_duration_minutes: number;
     language: string;
+    story_methodology: StoryMethodology;
     scenario_model: string;
     cache_ttl_seconds: number;
 }
@@ -58,12 +86,15 @@ export interface CharacterCard {
 export interface Beat {
     number: number;
     name: string;
+    english_name?: string;
     description: string;
     estimated_duration_seconds: number;
     key_moment?: string;
+    act?: number;
 }
 
 export interface BeatSheet {
+    methodology: StoryMethodology;
     beats: Beat[];
     total_duration_minutes: number;
 }

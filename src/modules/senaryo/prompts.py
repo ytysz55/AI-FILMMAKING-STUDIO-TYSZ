@@ -123,18 +123,24 @@ Ana karakterin **KİMLİK KARTI**'nı oluştur:
 
 JSON formatında yanıt ver.""",
 
-    "beat_sheet": """Önceki konuşmamızda belirlediğimiz konsept ve karakter için Blake Snyder'ın "Save the Cat" 15 vuruşluk şablonunu kullanarak hikayeyi yapılandır.
+    "beat_sheet": """Önceki konuşmamızda belirlediğimiz konsept ve karakter için **{methodology_name}** metodolojisini kullanarak hikayeyi yapılandır.
+
+{methodology_description}
 
 Toplam süre: {duration} dakika
 
-Her beat için:
-- **Numara** (1-15)
-- **Ad** (Opening Image, Theme Stated, Catalyst, vb.)
-- **Açıklama** (Bu beatte ana karakterimiz ne yapar/yaşar)
+Bu metodolojinin **{step_count} adımını** doldur. Her adım için:
+- **Numara** (1-{step_count})
+- **Ad** (Türkçe adım adı)
+- **İngilizce Ad** (Orijinal terim)
+- **Açıklama** (Bu adımda ana karakterimiz ne yapar/yaşar)
 - **Tahmini Süre** (saniye)
-- **Kritik An** (Bu beatteki en önemli moment)
+- **Kritik An** (Bu adımdaki en önemli moment)
+- **Perde** (1, 2 veya 3)
 
-⚠️ ÖNEMLİ: Beat'ler önceki adımlarda belirlediğimiz konsept ve karaktere UYGUN olmalı!
+⚠️ ÖNEMLİ: Adımlar önceki adımlarda belirlediğimiz konsept ve karaktere UYGUN olmalı!
+
+{methodology_steps}
 
 JSON formatında yanıt ver.""",
 

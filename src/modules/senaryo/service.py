@@ -22,7 +22,10 @@ from ...models.screenplay import (
     SceneOutlinesResponse,
     SceneResponse,
     OptimizationReport,
-    ProjectStatus
+    ProjectStatus,
+    StoryMethodology,
+    get_methodology_info,
+    get_methodology_steps
 )
 from .prompts import SYSTEM_PROMPT, STEP_PROMPTS, USER_GUIDANCE
 
@@ -126,7 +129,8 @@ class ScenarioService:
     
     def create_beat_sheet(self) -> BeatSheetResponse:
         """
-        Beat sheet (15 vuruş) oluştur.
+        Hikaye iskeletini oluştur.
+        Metodolojiye göre farklı adım sayısı ve yapı kullanılır.
         
         Chat history sayesinde AI önceki konuşmaları (konsept, karakter) hatırlıyor.
         
@@ -134,8 +138,25 @@ class ScenarioService:
             BeatSheetResponse
         """
         duration = self.session.project.config.target_duration_minutes
+        methodology = self.session.project.config.story_methodology
         
-        prompt = STEP_PROMPTS["beat_sheet"].format(duration=duration)
+        # Metodoloji bilgilerini al
+        method_info = get_methodology_info(methodology)
+        method_steps = get_methodology_steps(methodology)
+        
+        # Adımları formatla
+        steps_text = "\n".join([
+            f"  {s['number']}. {s['name']} ({s['english_name']}): {s['description']}"
+            for s in method_steps
+        ])
+        
+        prompt = STEP_PROMPTS["beat_sheet"].format(
+            methodology_name=method_info["name"],
+            methodology_description=method_info["description"],
+            step_count=method_info["step_count"],
+            duration=duration,
+            methodology_steps=f"Adımlar:\n{steps_text}"
+        )
         
         result = self.session.generate_structured(
             module=self.module,
@@ -144,7 +165,7 @@ class ScenarioService:
         )
         
         self._current_step = "beat_sheet_created"
-        self.session.update_progress(self.module, 30, "Beat sheet oluşturuldu")
+        self.session.update_progress(self.module, 30, f"Beat sheet oluşturuldu ({method_info['name']})")
         
         return result
     

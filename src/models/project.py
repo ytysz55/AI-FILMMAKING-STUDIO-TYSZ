@@ -9,6 +9,9 @@ from datetime import datetime
 from enum import Enum
 from pathlib import Path
 
+# Metodoloji import
+from src.models.screenplay import StoryMethodology
+
 
 class ModuleType(str, Enum):
     """Modül türleri"""
@@ -45,6 +48,12 @@ class ProjectConfig(BaseModel):
     language: str = Field(
         default="tr",
         description="Senaryo dili (tr, en)"
+    )
+    
+    # 🎬 Metodoloji seçimi
+    story_methodology: StoryMethodology = Field(
+        default=StoryMethodology.SAVE_THE_CAT,
+        description="Hikaye yazım metodolojisi (Save the Cat, Syd Field, Truby, Hero's Journey, Story Circle)"
     )
     
     # Model seçimleri

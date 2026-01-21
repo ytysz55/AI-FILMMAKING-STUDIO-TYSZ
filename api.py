@@ -2,6 +2,7 @@
 FastAPI Backend - Senaryo Modülü API
 """
 
+import logging
 from fastapi import FastAPI, HTTPException, UploadFile, File, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -15,6 +16,13 @@ from dotenv import load_dotenv
 # .env dosyasını yükle
 load_dotenv()
 
+# Logging ayarları
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
 # Modül importları
 from src.core import GeminiClient, ContextManager, ProjectSession
 from src.models.project import Project, ProjectConfig, ModuleType
@@ -26,6 +34,8 @@ from src.models.screenplay import (
     OptimizationReport
 )
 from src.modules.senaryo import ScenarioService
+from src.db import ProjectRepository, get_db
+from src.models.screenplay import StoryMethodology, METHODOLOGY_DEFINITIONS, get_methodology_info
 
 # ==================== APP SETUP ====================
 app = FastAPI(
@@ -43,18 +53,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ==================== IN-MEMORY STORAGE ====================
-# Production'da veritabanı kullanılacak
-projects: dict[str, Project] = {}
+# ==================== REPOSITORY & CACHE ====================
+# SQLite repository (global instance)
+repo = ProjectRepository()
+
+# RAM önbellek (performans için - SQLite her zaman source of truth)
 sessions: dict[str, ProjectSession] = {}
 services: dict[str, ScenarioService] = {}
-screenplays: dict[str, Screenplay] = {}
 
 # ==================== REQUEST/RESPONSE MODELS ====================
 class CreateProjectRequest(BaseModel):
     name: str
     target_duration_minutes: int = 30
     language: str = "tr"
+    methodology: str = "save_the_cat"  # Varsayılan Save the Cat
 
 class SelectConceptRequest(BaseModel):
     concept_index: int
@@ -79,16 +91,14 @@ class StatusResponse(BaseModel):
 
 # ==================== HELPER FUNCTIONS ====================
 def get_session(project_id: str) -> ProjectSession:
-    """Proje oturumunu al veya oluştur"""
+    """Proje oturumunu al veya SQLite'tan yükle"""
     if project_id not in sessions:
-        if project_id not in projects:
+        # SQLite'tan yüklemeyi dene
+        try:
+            sessions[project_id] = ProjectSession.load(project_id)
+            logger.info(f"Session yüklendi: {project_id}")
+        except FileNotFoundError:
             raise HTTPException(status_code=404, detail="Proje bulunamadı")
-        project = projects[project_id]
-        sessions[project_id] = ProjectSession(
-            project_name=project.name,
-            config=project.config,
-            project_id=project.id
-        )
     return sessions[project_id]
 
 def get_service(project_id: str) -> ScenarioService:
@@ -98,28 +108,42 @@ def get_service(project_id: str) -> ScenarioService:
         services[project_id] = ScenarioService(session)
     return services[project_id]
 
+def get_screenplay(project_id: str) -> Optional[Screenplay]:
+    """Senaryoyu al (session'dan veya SQLite'tan)"""
+    session = get_session(project_id)
+    return session.screenplay
+
 # ==================== PROJECT ENDPOINTS ====================
 @app.post("/api/v1/projects", response_model=ProjectResponse)
 async def create_project(request: CreateProjectRequest):
-    """Yeni proje oluştur"""
+    """Yeni proje oluştur (SQLite'a kaydedilir)"""
     import uuid
     project_id = str(uuid.uuid4())[:8]
     
+    # Metodoloji string'den enum'a çevir
+    try:
+        methodology = StoryMethodology(request.methodology)
+    except ValueError:
+        methodology = StoryMethodology.SAVE_THE_CAT
+    
     config = ProjectConfig(
         target_duration_minutes=request.target_duration_minutes,
-        language=request.language
+        language=request.language,
+        story_methodology=methodology
     )
     
-    # ProjectSession oluştur (disk'e de kaydeder)
+    # ProjectSession oluştur (SQLite'a kaydeder)
     session = ProjectSession(
         project_name=request.name,
         config=config,
         project_id=project_id
     )
     
-    # RAM'e ekle
-    projects[project_id] = session.project
+    # RAM cache'e ekle
     sessions[project_id] = session
+    
+    method_info = get_methodology_info(methodology)
+    logger.info(f"Yeni proje oluşturuldu: {project_id} - {request.name} - Metodoloji: {method_info['name']}")
     
     return ProjectResponse(
         id=project_id,
@@ -127,93 +151,99 @@ async def create_project(request: CreateProjectRequest):
         status="created",
         progress=0,
         token_usage={},
-        message=f"Proje '{request.name}' oluşturuldu"
+        message=f"Proje '{request.name}' oluşturuldu ({method_info['name']})"
     )
 
 @app.get("/api/v1/projects")
 async def list_projects():
-    """Tüm projeleri listele - RAM ve disk'ten"""
-    # Disk'teki projeleri de yükle (server restart durumu için)
-    disk_projects = ProjectSession.list_projects()
-    
-    # Disk'teki projeler RAM'de yoksa yükle
-    for dp in disk_projects:
-        if dp["id"] not in projects:
-            try:
-                session = ProjectSession.load(dp["id"])
-                projects[dp["id"]] = session.project
-                sessions[dp["id"]] = session
-                
-                # Screenplay varsa RAM'e yükle
-                if session.screenplay:
-                    screenplays[dp["id"]] = session.screenplay
-                    
-            except Exception as e:
-                print(f"Proje yüklenemedi: {dp['id']}, hata: {e}")
+    """Tüm projeleri SQLite'tan listele"""
+    projects_list = repo.list_projects()
     
     return {
-        "projects": [
-            {
-                "id": p.id,
-                "name": p.name,
-                "created_at": p.created_at.isoformat() if hasattr(p, 'created_at') else None,
-                "progress": p.get_module_progress(ModuleType.SENARYO).progress_percentage if hasattr(p, 'get_module_progress') else 0
-            }
-            for p in projects.values()
-        ]
+        "projects": projects_list
     }
+
+# ==================== METODOLOJI ENDPOINTS ====================
+@app.get("/api/v1/methodologies")
+async def list_methodologies():
+    """Kullanılabilir hikaye metodolojilerini listele"""
+    methodologies = []
+    
+    for method in StoryMethodology:
+        info = METHODOLOGY_DEFINITIONS[method]
+        methodologies.append({
+            "id": method.value,
+            "name": info["name"],
+            "author": info["author"],
+            "description": info["description"],
+            "best_for": info["best_for"],
+            "step_count": info["step_count"]
+        })
+    
+    return {"methodologies": methodologies}
+
+@app.get("/api/v1/methodologies/{methodology_id}")
+async def get_methodology(methodology_id: str):
+    """Belirli bir metodolojinin detaylarını al"""
+    try:
+        methodology = StoryMethodology(methodology_id)
+        info = METHODOLOGY_DEFINITIONS[methodology]
+        
+        return {
+            "id": methodology.value,
+            "name": info["name"],
+            "author": info["author"],
+            "description": info["description"],
+            "best_for": info["best_for"],
+            "step_count": info["step_count"],
+            "steps": info["steps"]
+        }
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Metodoloji bulunamadı")
 
 @app.get("/api/v1/projects/{project_id}")
 async def get_project(project_id: str):
-    """Proje detayını al"""
-    # RAM'de yoksa disk'ten yüklemeyi dene
-    if project_id not in projects:
-        try:
-            session = ProjectSession.load(project_id)
-            projects[project_id] = session.project
-            sessions[project_id] = session
-            if session.screenplay:
-                screenplays[project_id] = session.screenplay
-        except FileNotFoundError:
-            raise HTTPException(status_code=404, detail="Proje bulunamadı")
+    """Proje detayını SQLite'tan al"""
+    try:
+        session = get_session(project_id)
+    except HTTPException:
+        raise HTTPException(status_code=404, detail="Proje bulunamadı")
     
-    project = projects[project_id]
-    
-    # Screenplay: önce screenplays dict, sonra session'dan al
-    screenplay = screenplays.get(project_id)
-    if not screenplay and project_id in sessions:
-        screenplay = sessions[project_id].screenplay
+    screenplay = session.screenplay
     
     return {
-        "project": project.model_dump() if hasattr(project, 'model_dump') else project.__dict__,
+        "project": session.project.model_dump() if hasattr(session.project, 'model_dump') else session.project.__dict__,
         "screenplay": screenplay.model_dump() if screenplay and hasattr(screenplay, 'model_dump') else None,
-        "context_status": sessions[project_id].context.check_status() if project_id in sessions else None
+        "context_status": session.context.check_status()
     }
 
 @app.delete("/api/v1/projects/{project_id}")
 async def delete_project(project_id: str):
-    """Projeyi sil"""
+    """Projeyi SQLite ve RAM'den sil"""
     import shutil
     
-    # RAM'den sil
-    if project_id in projects:
-        del projects[project_id]
+    # SQLite'tan sil
+    deleted = repo.delete_project(project_id)
+    
+    # RAM cache'den sil
     if project_id in sessions:
         del sessions[project_id]
     if project_id in services:
         del services[project_id]
-    if project_id in screenplays:
-        del screenplays[project_id]
     
-    # Disk'ten de sil
+    # Proje klasörünü de sil (dosya yüklemeleri için)
     project_dir = Path("data/projects") / project_id
     if project_dir.exists():
         try:
             shutil.rmtree(project_dir)
         except Exception as e:
-            print(f"Proje klasörü silinemedi: {e}")
+            logger.warning(f"Proje klasörü silinemedi: {e}")
     
-    return {"success": True, "message": "Proje silindi"}
+    if deleted:
+        logger.info(f"Proje silindi: {project_id}")
+        return {"success": True, "message": "Proje silindi"}
+    else:
+        raise HTTPException(status_code=404, detail="Proje bulunamadı")
 
 # ==================== SOURCE UPLOAD ====================
 @app.post("/api/v1/projects/{project_id}/source")
@@ -255,28 +285,28 @@ async def upload_source(project_id: str, file: UploadFile = File(...)):
 # ==================== SENARYO WORKFLOW ====================
 @app.post("/api/v1/projects/{project_id}/senaryo/analyze")
 async def analyze_source(project_id: str):
-    """Kaynağı analiz et ve 3 konsept öner"""
+    """Kaynakı analiz et ve 3 konsept öner"""
     service = get_service(project_id)
-    session = sessions.get(project_id)
+    session = get_session(project_id)
     
     try:
         result = service.analyze_source()
         
-        # Screenplay başlat
-        if project_id not in screenplays:
-            screenplays[project_id] = Screenplay(
-                title=projects[project_id].name,
+        # Screenplay başlat veya güncelle
+        if session.screenplay is None:
+            session.screenplay = Screenplay(
+                title=session.project.name,
                 source_summary=result.source_summary,
                 concepts=result.concepts
             )
         else:
-            screenplays[project_id].concepts = result.concepts
-            screenplays[project_id].source_summary = result.source_summary
+            session.screenplay.concepts = result.concepts
+            session.screenplay.source_summary = result.source_summary
         
-        # AUTO-SAVE: Disk'e kaydet
-        if session:
-            session.screenplay = screenplays[project_id]
-            session.save_screenplay()
+        # SQLite'a kaydet
+        session.save_screenplay()
+        
+        logger.info(f"Kaynak analiz edildi: {project_id}")
         
         return {
             "success": True,
@@ -285,16 +315,16 @@ async def analyze_source(project_id: str):
             "status": service.get_status()
         }
     except Exception as e:
+        logger.error(f"Analiz hatası: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/v1/projects/{project_id}/senaryo/select-concept")
 async def select_concept(project_id: str, request: SelectConceptRequest):
     """Konsept seç ve karakter kartı oluştur"""
     service = get_service(project_id)
-    session = sessions.get(project_id)
+    session = get_session(project_id)
     
-    duration = request.duration_minutes or projects[project_id].config.target_duration_minutes
-    screenplay = screenplays.get(project_id)
+    duration = request.duration_minutes or session.project.config.target_duration_minutes
     
     try:
         # Chat history sayesinde AI önceki konuşmayı hatırlıyor
@@ -304,14 +334,12 @@ async def select_concept(project_id: str, request: SelectConceptRequest):
         )
         
         # Screenplay güncelle
-        if screenplay:
-            screenplay.selected_concept_index = request.concept_index
-            screenplay.protagonist = result.protagonist
-        
-        # AUTO-SAVE: Disk'e kaydet
-        if session and screenplay:
-            session.screenplay = screenplay
+        if session.screenplay:
+            session.screenplay.selected_concept_index = request.concept_index
+            session.screenplay.protagonist = result.protagonist
             session.save_screenplay()
+        
+        logger.info(f"Konsept seçildi: {project_id} - index {request.concept_index}")
         
         return {
             "success": True,
@@ -320,26 +348,25 @@ async def select_concept(project_id: str, request: SelectConceptRequest):
             "status": service.get_status()
         }
     except Exception as e:
+        logger.error(f"Konsept seçim hatası: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/v1/projects/{project_id}/senaryo/beat-sheet")
 async def create_beat_sheet(project_id: str):
     """Beat sheet (15 vuruş) oluştur"""
     service = get_service(project_id)
-    session = sessions.get(project_id)
+    session = get_session(project_id)
     
     try:
         # Chat history sayesinde AI önceki konuşmaları hatırlıyor
         result = service.create_beat_sheet()
         
         # Screenplay güncelle
-        if project_id in screenplays:
-            screenplays[project_id].beat_sheet = result.beat_sheet
-        
-        # AUTO-SAVE: Disk'e kaydet
-        if session and project_id in screenplays:
-            session.screenplay = screenplays[project_id]
+        if session.screenplay:
+            session.screenplay.beat_sheet = result.beat_sheet
             session.save_screenplay()
+        
+        logger.info(f"Beat sheet oluşturuldu: {project_id}")
         
         return {
             "success": True,
@@ -347,15 +374,19 @@ async def create_beat_sheet(project_id: str):
             "status": service.get_status()
         }
     except Exception as e:
+        logger.error(f"Beat sheet hatası: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.put("/api/v1/projects/{project_id}/senaryo/beat-sheet")
 async def update_beat_sheet(project_id: str, beat_sheet: BeatSheet):
     """Beat sheet güncelle"""
-    if project_id not in screenplays:
+    session = get_session(project_id)
+    
+    if not session.screenplay:
         raise HTTPException(status_code=404, detail="Screenplay bulunamadı")
     
-    screenplays[project_id].beat_sheet = beat_sheet
+    session.screenplay.beat_sheet = beat_sheet
+    session.save_screenplay()
     
     return {"success": True, "message": "Beat sheet güncellendi"}
 
@@ -363,18 +394,17 @@ async def update_beat_sheet(project_id: str, beat_sheet: BeatSheet):
 async def create_scene_outlines(project_id: str):
     """Zaman ayarlı sahne listesi oluştur"""
     service = get_service(project_id)
-    session = sessions.get(project_id)
+    session = get_session(project_id)
     
     try:
         result = service.create_scene_outlines()
         
         # Screenplay güncelle
-        screenplays[project_id].scene_outlines = result.outlines
-        
-        # AUTO-SAVE: Disk'e kaydet
-        if session:
-            session.screenplay = screenplays[project_id]
+        if session.screenplay:
+            session.screenplay.scene_outlines = result.outlines
             session.save_screenplay()
+        
+        logger.info(f"Sahne listesi oluşturuldu: {project_id} - {len(result.outlines)} sahne")
         
         return {
             "success": True,
@@ -383,14 +413,15 @@ async def create_scene_outlines(project_id: str):
             "status": service.get_status()
         }
     except Exception as e:
+        logger.error(f"Sahne listesi hatası: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/v1/projects/{project_id}/senaryo/scenes/next")
 async def write_next_scene(project_id: str):
     """Sıradaki sahneyi yaz"""
     service = get_service(project_id)
-    session = sessions.get(project_id)
-    screenplay = screenplays.get(project_id)
+    session = get_session(project_id)
+    screenplay = session.screenplay
     
     if not screenplay or not screenplay.scene_outlines:
         raise HTTPException(status_code=400, detail="Önce sahne listesi oluşturulmalı")
@@ -400,11 +431,9 @@ async def write_next_scene(project_id: str):
         
         # Screenplay güncelle
         screenplay.scenes.append(result.scene)
+        session.save_screenplay()
         
-        # AUTO-SAVE: Her sahne sonrası disk'e kaydet
-        if session:
-            session.screenplay = screenplay
-            session.save_screenplay()
+        logger.info(f"Sahne yazıldı: {project_id} - Sahne {result.scene.scene_number}")
         
         return {
             "success": True,
@@ -416,37 +445,21 @@ async def write_next_scene(project_id: str):
     except ValueError as e:
         return {"success": False, "message": str(e), "all_scenes_completed": True}
     except Exception as e:
+        logger.error(f"Sahne yazma hatası: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/v1/projects/{project_id}/senaryo/scenes/next/stream")
 async def write_next_scene_stream(project_id: str):
-    """Sıradaki sahneyi streaming olarak yaz"""
-    import json as json_lib
-    
-    service = get_service(project_id)
-    screenplay = screenplays.get(project_id)
-    
-    if not screenplay or not screenplay.scene_outlines:
-        raise HTTPException(status_code=400, detail="Önce sahne listesi oluşturulmalı")
-    
-    async def generate():
-        try:
-            for chunk in service.write_next_scene(screenplay.scene_outlines, stream=True):
-                # SSE protokolü için JSON serialize et (\n sorununu önle)
-                payload = json_lib.dumps({"text": chunk}, ensure_ascii=False)
-                yield f"data: {payload}\n\n"
-            yield "data: [DONE]\n\n"
-        except Exception as e:
-            error_payload = json_lib.dumps({"error": str(e)}, ensure_ascii=False)
-            yield f"data: {error_payload}\n\n"
-    
-    return StreamingResponse(generate(), media_type="text/event-stream")
+    """Sıradaki sahneyi streaming olarak yaz (devre dışı - şimdilik)"""
+    # NOT: Streaming şimdilik devre dışı, normal endpoint kullanın
+    raise HTTPException(status_code=501, detail="Streaming şimdilik devre dışı. Normal endpoint kullanın.")
 
 @app.put("/api/v1/projects/{project_id}/senaryo/scenes/{scene_number}")
 async def revise_scene(project_id: str, scene_number: int, request: ReviseSceneRequest):
     """Sahneyi revize et"""
     service = get_service(project_id)
-    screenplay = screenplays.get(project_id)
+    session = get_session(project_id)
+    screenplay = session.screenplay
     
     if not screenplay:
         raise HTTPException(status_code=404, detail="Screenplay bulunamadı")
@@ -465,19 +478,23 @@ async def revise_scene(project_id: str, scene_number: int, request: ReviseSceneR
                 screenplay.scenes[i] = result.scene
                 break
         
+        session.save_screenplay()
+        
         return {
             "success": True,
             "scene": result.scene.model_dump(),
             "status": service.get_status()
         }
     except Exception as e:
+        logger.error(f"Revizyon hatası: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/v1/projects/{project_id}/senaryo/scenes/{scene_number}/expand")
 async def expand_scene(project_id: str, scene_number: int):
     """Sahneyi genişlet (2x)"""
     service = get_service(project_id)
-    screenplay = screenplays.get(project_id)
+    session = get_session(project_id)
+    screenplay = session.screenplay
     
     if not screenplay:
         raise HTTPException(status_code=404, detail="Screenplay bulunamadı")
@@ -495,18 +512,22 @@ async def expand_scene(project_id: str, scene_number: int):
                 screenplay.scenes[i] = result.scene
                 break
         
+        session.save_screenplay()
+        
         return {
             "success": True,
             "scene": result.scene.model_dump(),
             "status": service.get_status()
         }
     except Exception as e:
+        logger.error(f"Genişletme hatası: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/v1/projects/{project_id}/senaryo/scenes/{scene_number}/approve")
 async def approve_scene(project_id: str, scene_number: int):
     """Sahneyi onayla"""
-    screenplay = screenplays.get(project_id)
+    session = get_session(project_id)
+    screenplay = session.screenplay
     
     if not screenplay:
         raise HTTPException(status_code=404, detail="Screenplay bulunamadı")
@@ -514,7 +535,8 @@ async def approve_scene(project_id: str, scene_number: int):
     for i, s in enumerate(screenplay.scenes):
         if s.scene_number == scene_number:
             screenplay.scenes[i].status = "approved"
-            return {"success": True, "message": f"Sahne {scene_number} onaylandı"}
+            session.save_screenplay()
+            return {"success": True, "message": f"Sahne {scene_number} onaylan dı"}
     
     raise HTTPException(status_code=404, detail="Sahne bulunamadı")
 
@@ -522,7 +544,8 @@ async def approve_scene(project_id: str, scene_number: int):
 async def run_optimization(project_id: str):
     """Script Doctor analizi çalıştır"""
     service = get_service(project_id)
-    screenplay = screenplays.get(project_id)
+    session = get_session(project_id)
+    screenplay = session.screenplay
     
     if not screenplay:
         raise HTTPException(status_code=404, detail="Screenplay bulunamadı")
@@ -530,18 +553,22 @@ async def run_optimization(project_id: str):
     try:
         result = service.run_optimization(screenplay)
         
+        logger.info(f"Optimizasyon tamamlandı: {project_id}")
+        
         return {
             "success": True,
             "report": result.model_dump(),
             "status": service.get_status()
         }
     except Exception as e:
+        logger.error(f"Optimizasyon hatası: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/v1/projects/{project_id}/senaryo/export")
 async def export_screenplay(project_id: str, format: str = "json"):
     """Senaryoyu export et"""
-    screenplay = screenplays.get(project_id)
+    session = get_session(project_id)
+    screenplay = session.screenplay
     
     if not screenplay:
         raise HTTPException(status_code=404, detail="Screenplay bulunamadı")
@@ -593,11 +620,11 @@ async def export_screenplay(project_id: str, format: str = "json"):
 @app.get("/api/v1/projects/{project_id}/status")
 async def get_status(project_id: str):
     """Proje durumunu al"""
-    if project_id not in services:
+    try:
+        service = get_service(project_id)
+        return service.get_status()
+    except HTTPException:
         return {"status": "not_started", "progress": 0}
-    
-    service = services[project_id]
-    return service.get_status()
 
 @app.get("/api/v1/projects/{project_id}/context")
 async def get_context_status(project_id: str):
@@ -609,10 +636,12 @@ async def get_context_status(project_id: str):
 @app.get("/health")
 async def health_check():
     """API sağlık kontrolü"""
+    project_count = len(repo.list_projects())
     return {
         "status": "healthy",
         "api_key_configured": bool(os.getenv("GEMINI_API_KEY")),
-        "projects_count": len(projects)
+        "projects_count": project_count,
+        "database": "SQLite"
     }
 
 # ==================== MAIN ====================

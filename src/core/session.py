@@ -4,6 +4,7 @@ Proje oturumu yönetimi ve durum takibi.
 """
 
 import json
+import logging
 import uuid
 from pathlib import Path
 from typing import Optional, Dict, Any
@@ -19,6 +20,9 @@ from ..models.project import (
     ThinkingLevel
 )
 from ..models.screenplay import Screenplay, ProjectStatus
+from ..db import ProjectRepository, get_db
+
+logger = logging.getLogger(__name__)
 
 
 class ProjectSession:
@@ -36,7 +40,8 @@ class ProjectSession:
         project_name: str,
         config: Optional[ProjectConfig] = None,
         project_id: Optional[str] = None,
-        api_key: Optional[str] = None
+        api_key: Optional[str] = None,
+        repository: Optional[ProjectRepository] = None
     ):
         """
         ProjectSession başlat.
@@ -46,15 +51,24 @@ class ProjectSession:
             config: Proje konfigürasyonu
             project_id: Mevcut proje ID (yükleme için)
             api_key: Gemini API key
+            repository: Proje repository (SQLite)
         """
         self.project_id = project_id or str(uuid.uuid4())
         
-        # Proje oluştur
-        self.project = Project(
-            id=self.project_id,
-            name=project_name,
-            config=config or ProjectConfig()
-        )
+        # Repository (SQLite)
+        self._repo = repository or ProjectRepository()
+        
+        # Mevcut proje varsa veritabanından yükle
+        existing_project = self._repo.get_project(self.project_id)
+        if existing_project:
+            self.project = existing_project
+        else:
+            # Yeni proje oluştur
+            self.project = self._repo.create_project(
+                project_id=self.project_id,
+                name=project_name,
+                config=config or ProjectConfig()
+            )
         
         # Clients
         self.gemini = GeminiClient(api_key=api_key)
@@ -63,14 +77,19 @@ class ProjectSession:
             project_id=self.project_id
         )
         
-        # Senaryo durumu
-        self.screenplay: Optional[Screenplay] = None
+        # Context state yükle (varsa)
+        context_state = self._repo.get_context_state(self.project_id)
+        if context_state and context_state.get("total_usage"):
+            self.context.load_from_dict(context_state)
+        
+        # Senaryo durumu - veritabanından yükle
+        self.screenplay = self._repo.get_screenplay(self.project_id)
         
         # Aktif chat ID'leri ve kaynak dosya
-        self._active_chats: Dict[str, str] = {}  # module -> chat_id
+        self._active_chats = self._repo.get_active_chats(self.project_id)
         self._source_file: Optional[Any] = None  # Yüklenen dosya objesi
         
-        # Proje dizini oluştur
+        # Proje dizini oluştur (dosya yüklemeleri için)
         self.project_dir.mkdir(parents=True, exist_ok=True)
     
     @property
@@ -376,37 +395,49 @@ class ProjectSession:
     # ==================== KAYDETME / YÜKLEME ====================
     
     def _save_state(self) -> None:
-        """Proje durumunu kaydet"""
-        state_file = self.project_dir / "state.json"
-        
-        state = {
-            "project": self.project.model_dump(mode="json"),
-            "context": self.context.to_dict(),
-            "active_chats": self._active_chats
-        }
-        
-        with open(state_file, "w", encoding="utf-8") as f:
-            json.dump(state, f, ensure_ascii=False, indent=2, default=str)
+        """Proje durumunu SQLite veritabanına kaydet"""
+        try:
+            # Proje güncelle
+            self._repo.update_project(self.project)
+            
+            # Context state kaydet
+            self._repo.save_context_state(
+                self.project_id,
+                self.context.to_dict().get("components", {}),
+                self.context.total_usage
+            )
+            
+            # Active chats kaydet
+            self._repo.save_active_chats(self.project_id, self._active_chats)
+            
+            logger.debug(f"Proje durumu kaydedildi: {self.project_id}")
+        except Exception as e:
+            logger.error(f"Proje kaydetme hatası: {e}")
+            raise
     
     def save_screenplay(self) -> Path:
-        """Senaryoyu dosyaya kaydet"""
+        """Senaryoyu SQLite veritabanına kaydet"""
         if not self.screenplay:
             raise ValueError("Kaydedilecek senaryo yok")
         
-        output_file = self.project_dir / "screenplay.json"
+        # Veritabanına kaydet
+        self._repo.save_screenplay(self.project_id, self.screenplay)
         
+        # Ayrıca JSON dosyası olarak da kaydet (export için)
+        output_file = self.project_dir / "screenplay.json"
         with open(output_file, "w", encoding="utf-8") as f:
             f.write(self.screenplay.model_dump_json(indent=2))
         
         self.project.output_files.append(str(output_file))
         self._save_state()
         
+        logger.info(f"Screenplay kaydedildi: {self.project_id}")
         return output_file
     
     @classmethod
     def load(cls, project_id: str, api_key: Optional[str] = None) -> "ProjectSession":
         """
-        Mevcut projeyi yükle.
+        Mevcut projeyi SQLite veritabanından yükle.
         
         Args:
             project_id: Proje ID
@@ -415,35 +446,21 @@ class ProjectSession:
         Returns:
             ProjectSession instance
         """
-        state_file = cls.DATA_DIR / project_id / "state.json"
+        repo = ProjectRepository()
         
-        if not state_file.exists():
+        # Veritabanından projeyi kontrol et
+        project = repo.get_project(project_id)
+        if not project:
             raise FileNotFoundError(f"Proje bulunamadı: {project_id}")
         
-        with open(state_file, "r", encoding="utf-8") as f:
-            state = json.load(f)
-        
-        # Proje oluştur
-        project = Project.model_validate(state["project"])
-        
+        # Session oluştur (constructor otomatik olarak veritabanından yükleyecek)
         session = cls(
             project_name=project.name,
             config=project.config,
             project_id=project.id,
-            api_key=api_key
+            api_key=api_key,
+            repository=repo
         )
-        session.project = project
-        session._active_chats = state.get("active_chats", {})
-        
-        # Context bilgilerini yükle (kümülatif token kullanımı)
-        if "context" in state:
-            session.context.load_from_dict(state["context"])
-        
-        # Senaryo varsa yükle
-        screenplay_file = session.project_dir / "screenplay.json"
-        if screenplay_file.exists():
-            with open(screenplay_file, "r", encoding="utf-8") as f:
-                session.screenplay = Screenplay.model_validate_json(f.read())
         
         # Cache bilgilerini GeminiClient'a aktar (server restart sonrası recovery)
         for cache_info in project.active_caches:
@@ -456,31 +473,14 @@ class ProjectSession:
                     session.gemini._caches[full_cache_id] = cache_info
                     break
         
+        logger.info(f"Proje yüklendi: {project_id}")
         return session
     
     @classmethod
     def list_projects(cls) -> list[Dict[str, Any]]:
-        """Tüm projeleri listele"""
-        projects = []
-        
-        if not cls.DATA_DIR.exists():
-            return projects
-        
-        for project_dir in cls.DATA_DIR.iterdir():
-            if project_dir.is_dir():
-                state_file = project_dir / "state.json"
-                if state_file.exists():
-                    with open(state_file, "r", encoding="utf-8") as f:
-                        state = json.load(f)
-                    
-                    projects.append({
-                        "id": state["project"]["id"],
-                        "name": state["project"]["name"],
-                        "progress": state["project"].get("overall_progress", 0),
-                        "updated_at": state["project"].get("updated_at")
-                    })
-        
-        return sorted(projects, key=lambda x: x.get("updated_at", ""), reverse=True)
+        """Tüm projeleri SQLite veritabanından listele"""
+        repo = ProjectRepository()
+        return repo.list_projects()
     
     # ==================== YARDIMCI METODLAR ====================
     

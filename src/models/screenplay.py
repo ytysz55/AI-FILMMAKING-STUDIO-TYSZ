@@ -4,9 +4,146 @@ Gemini API Structured Output ile uyumlu.
 """
 
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from enum import Enum
 from datetime import datetime
+
+
+# ==================== METODOLOJI TANIMLARI ====================
+
+class StoryMethodology(str, Enum):
+    """Hikaye anlatım metodolojileri"""
+    SAVE_THE_CAT = "save_the_cat"      # Blake Snyder - 15 Beat
+    SYD_FIELD = "syd_field"            # Syd Field - 3 Perde Paradigması
+    TRUBY = "truby"                    # John Truby - 7/22 Adım
+    HEROS_JOURNEY = "heros_journey"    # Vogler/Campbell - 12 Aşama
+    STORY_CIRCLE = "story_circle"      # Dan Harmon - 8 Adım
+
+
+class MethodologyStep(BaseModel):
+    """Metodoloji adımı tanımı"""
+    number: int = Field(description="Adım numarası")
+    name: str = Field(description="Adım adı")
+    english_name: str = Field(description="İngilizce adı (referans için)")
+    description: str = Field(description="Bu adımda ne olması gerektiği")
+    percentage_of_story: float = Field(description="Hikayedeki yüzdelik konumu (0-100)")
+    act: int = Field(description="Hangi perdede (1, 2 veya 3)")
+
+
+# Her metodoloji için adım tanımları
+METHODOLOGY_DEFINITIONS: Dict[StoryMethodology, Dict[str, Any]] = {
+    
+    StoryMethodology.SAVE_THE_CAT: {
+        "name": "Save the Cat!",
+        "author": "Blake Snyder",
+        "description": "Hollywood'un en popüler yapısal şablonu. 15 beat ile hikayeyi ticari başarıya optimize eder.",
+        "best_for": ["Ticari filmler", "Hollywood yapımları", "Net yapılı hikayeler"],
+        "step_count": 15,
+        "steps": [
+            {"number": 1, "name": "Açılış Görüntüsü", "english_name": "Opening Image", "description": "Kahramanın başlangıç durumunu gösteren görsel metafor", "percentage_of_story": 0, "act": 1},
+            {"number": 2, "name": "Tema Belirtilir", "english_name": "Theme Stated", "description": "Filmin ana teması dolaylı olarak ifade edilir", "percentage_of_story": 5, "act": 1},
+            {"number": 3, "name": "Kurulum", "english_name": "Set-Up", "description": "Kahramanın dünyası, kusurları ve ihtiyaçları tanıtılır", "percentage_of_story": 10, "act": 1},
+            {"number": 4, "name": "Katalizör", "english_name": "Catalyst", "description": "Hikayeyi başlatan tetikleyici olay", "percentage_of_story": 10, "act": 1},
+            {"number": 5, "name": "Tartışma", "english_name": "Debate", "description": "Kahraman maceraya çıkıp çıkmamayı tartışır", "percentage_of_story": 12.5, "act": 1},
+            {"number": 6, "name": "2. Perdeye Geçiş", "english_name": "Break into Two", "description": "Kahraman eski dünyasını terk eder", "percentage_of_story": 25, "act": 2},
+            {"number": 7, "name": "B Hikayesi", "english_name": "B Story", "description": "Genellikle aşk ya da dostluk - temayı taşır", "percentage_of_story": 30, "act": 2},
+            {"number": 8, "name": "Eğlence ve Oyunlar", "english_name": "Fun and Games", "description": "Konseptin vaadini yerine getiren sahneler", "percentage_of_story": 35, "act": 2},
+            {"number": 9, "name": "Orta Nokta", "english_name": "Midpoint", "description": "Sahte zafer veya sahte yenilgi", "percentage_of_story": 50, "act": 2},
+            {"number": 10, "name": "Kötüler Yaklaşıyor", "english_name": "Bad Guys Close In", "description": "Dış ve iç baskılar artar", "percentage_of_story": 55, "act": 2},
+            {"number": 11, "name": "Her Şey Kayıp", "english_name": "All Is Lost", "description": "En düşük nokta - ölüm anı", "percentage_of_story": 75, "act": 2},
+            {"number": 12, "name": "Ruhun Karanlık Gecesi", "english_name": "Dark Night of the Soul", "description": "Kahraman yıkımla yüzleşir", "percentage_of_story": 80, "act": 2},
+            {"number": 13, "name": "3. Perdeye Geçiş", "english_name": "Break into Three", "description": "Çözüm bulunur, plan yapılır", "percentage_of_story": 85, "act": 3},
+            {"number": 14, "name": "Final", "english_name": "Finale", "description": "A ve B hikayeler birleşir, savaş kazanılır", "percentage_of_story": 90, "act": 3},
+            {"number": 15, "name": "Kapanış Görüntüsü", "english_name": "Final Image", "description": "Değişimi gösteren görsel - açılışın tersi", "percentage_of_story": 100, "act": 3}
+        ]
+    },
+    
+    StoryMethodology.SYD_FIELD: {
+        "name": "Syd Field Paradigması",
+        "author": "Syd Field",
+        "description": "Modern senaryo yazımının temeli. Üç perde ve kritik dönüm noktalarına odaklanır.",
+        "best_for": ["Klasik yapı", "Esnek ama sağlam iskelet", "Her tür için uygun"],
+        "step_count": 8,
+        "steps": [
+            {"number": 1, "name": "Kurulum", "english_name": "Setup", "description": "Karakterler, dünya ve durum tanıtılır", "percentage_of_story": 0, "act": 1},
+            {"number": 2, "name": "Tetikleyici Olay", "english_name": "Inciting Incident", "description": "Hikayeyi harekete geçiren ilk kıvılcım", "percentage_of_story": 10, "act": 1},
+            {"number": 3, "name": "1. Dönüm Noktası", "english_name": "Plot Point 1", "description": "Hikayeyi yeni yöne çeviren büyük olay", "percentage_of_story": 25, "act": 1},
+            {"number": 4, "name": "Yüzleşme - Yükseliş", "english_name": "Confrontation Rising", "description": "Engeller ve çatışmalar yoğunlaşır", "percentage_of_story": 37.5, "act": 2},
+            {"number": 5, "name": "Orta Nokta", "english_name": "Midpoint", "description": "Büyük bir keşif veya değişim anı", "percentage_of_story": 50, "act": 2},
+            {"number": 6, "name": "Yüzleşme - Düşüş", "english_name": "Confrontation Falling", "description": "Kahraman zorluklarla boğuşur", "percentage_of_story": 62.5, "act": 2},
+            {"number": 7, "name": "2. Dönüm Noktası", "english_name": "Plot Point 2", "description": "Son perdeyı tetikleyen kriz anı", "percentage_of_story": 75, "act": 2},
+            {"number": 8, "name": "Çözüm", "english_name": "Resolution", "description": "Doruk noktası ve sonuç", "percentage_of_story": 90, "act": 3}
+        ]
+    },
+    
+    StoryMethodology.TRUBY: {
+        "name": "John Truby 7 Adım",
+        "author": "John Truby",
+        "description": "Karakterin içsel değişimine odaklanan organik yapı. Zayıflık → Kendini Keşfetme yolculuğu.",
+        "best_for": ["Karakter odaklı dramalar", "Derin psikolojik hikayeler", "Ödüllü filmler"],
+        "step_count": 7,
+        "steps": [
+            {"number": 1, "name": "Zayıflık ve İhtiyaç", "english_name": "Weakness and Need", "description": "Kahramanın hayatını mahveden eksiklik. Psikolojik + ahlaki ihtiyaç.", "percentage_of_story": 0, "act": 1},
+            {"number": 2, "name": "Arzu", "english_name": "Desire", "description": "Kahramanın somut hedefi - hikayeyi sürükleyen motor", "percentage_of_story": 15, "act": 1},
+            {"number": 3, "name": "Rakip", "english_name": "Opponent", "description": "Kahramanın zayıflığına en çok saldıran karakter", "percentage_of_story": 25, "act": 2},
+            {"number": 4, "name": "Plan", "english_name": "Plan", "description": "Hedefe ulaşmak için strateji", "percentage_of_story": 40, "act": 2},
+            {"number": 5, "name": "Savaş", "english_name": "Battle", "description": "Kahraman ve rakip arasında nihai çatışma", "percentage_of_story": 75, "act": 3},
+            {"number": 6, "name": "Kendini Keşfetme", "english_name": "Self-Revelation", "description": "Kahramanın değiştiği an - gerçeği görür", "percentage_of_story": 85, "act": 3},
+            {"number": 7, "name": "Yeni Denge", "english_name": "New Equilibrium", "description": "Değişim sonrası yeni durum", "percentage_of_story": 95, "act": 3}
+        ]
+    },
+    
+    StoryMethodology.HEROS_JOURNEY: {
+        "name": "Kahramanın Yolculuğu",
+        "author": "Christopher Vogler / Joseph Campbell",
+        "description": "Evrensel mitolojik yapı. Epik maceralar ve dönüşüm hikayeleri için ideal.",
+        "best_for": ["Epik maceralar", "Fantastik hikayeler", "Star Wars, LOTR tarzı"],
+        "step_count": 12,
+        "steps": [
+            {"number": 1, "name": "Sıradan Dünya", "english_name": "Ordinary World", "description": "Kahramanın günlük yaşamı", "percentage_of_story": 0, "act": 1},
+            {"number": 2, "name": "Maceraya Çağrı", "english_name": "Call to Adventure", "description": "Kahraman eyleme çağrılır", "percentage_of_story": 10, "act": 1},
+            {"number": 3, "name": "Çağrının Reddi", "english_name": "Refusal of the Call", "description": "Kahraman tereddüt eder", "percentage_of_story": 15, "act": 1},
+            {"number": 4, "name": "Akıl Hocası ile Buluşma", "english_name": "Meeting the Mentor", "description": "Rehber/bilge kişi ortaya çıkar", "percentage_of_story": 20, "act": 1},
+            {"number": 5, "name": "İlk Eşiği Geçiş", "english_name": "Crossing the First Threshold", "description": "Kahraman bilinmeyen dünyaya girer", "percentage_of_story": 25, "act": 2},
+            {"number": 6, "name": "Sınavlar, Müttefikler, Düşmanlar", "english_name": "Tests, Allies, Enemies", "description": "Yeni dünyanın kurallarını öğrenir", "percentage_of_story": 35, "act": 2},
+            {"number": 7, "name": "En Derin Mağaraya Yaklaşma", "english_name": "Approach to Inmost Cave", "description": "Büyük sınava hazırlık", "percentage_of_story": 45, "act": 2},
+            {"number": 8, "name": "Büyük Sınav", "english_name": "Ordeal", "description": "Ölüm ve yeniden doğuş anı", "percentage_of_story": 55, "act": 2},
+            {"number": 9, "name": "Ödül", "english_name": "Reward (Seizing the Sword)", "description": "Kahraman ganimet kazanır", "percentage_of_story": 65, "act": 2},
+            {"number": 10, "name": "Geri Dönüş Yolu", "english_name": "The Road Back", "description": "Eve dönüş başlar", "percentage_of_story": 75, "act": 3},
+            {"number": 11, "name": "Diriliş", "english_name": "Resurrection", "description": "Son sınav - tamamen dönüşür", "percentage_of_story": 85, "act": 3},
+            {"number": 12, "name": "İksir ile Dönüş", "english_name": "Return with the Elixir", "description": "Değişmiş olarak eve döner", "percentage_of_story": 95, "act": 3}
+        ]
+    },
+    
+    StoryMethodology.STORY_CIRCLE: {
+        "name": "Dan Harmon Story Circle",
+        "author": "Dan Harmon",
+        "description": "Kahramanın Yolculuğu'nun basitleştirilmiş versiyonu. TV dizileri ve kısa formlar için ideal.",
+        "best_for": ["TV dizileri", "Kısa filmler", "Episodik içerik", "Animasyonlar"],
+        "step_count": 8,
+        "steps": [
+            {"number": 1, "name": "Konfor Alanı", "english_name": "You (A character is in a zone of comfort)", "description": "Karakter tanıdık ortamında", "percentage_of_story": 0, "act": 1},
+            {"number": 2, "name": "İstek", "english_name": "Need (But they want something)", "description": "Bir şey ister veya ihtiyaç duyar", "percentage_of_story": 12.5, "act": 1},
+            {"number": 3, "name": "Bilinmeyene Giriş", "english_name": "Go (They enter an unfamiliar situation)", "description": "Yeni, bilinmeyen bir duruma girer", "percentage_of_story": 25, "act": 2},
+            {"number": 4, "name": "Arayış", "english_name": "Search (Adapt to it)", "description": "Yeni duruma uyum sağlar, arar", "percentage_of_story": 37.5, "act": 2},
+            {"number": 5, "name": "Bulma", "english_name": "Find (Get what they wanted)", "description": "İstediğini bulur veya elde eder", "percentage_of_story": 50, "act": 2},
+            {"number": 6, "name": "Bedel Ödeme", "english_name": "Take (Pay a heavy price for it)", "description": "Ağır bir bedel öder", "percentage_of_story": 62.5, "act": 2},
+            {"number": 7, "name": "Dönüş", "english_name": "Return (Then return to their familiar situation)", "description": "Tanıdık duruma geri döner", "percentage_of_story": 75, "act": 3},
+            {"number": 8, "name": "Değişim", "english_name": "Change (Having changed)", "description": "Değişmiş olarak döngüyü tamamlar", "percentage_of_story": 90, "act": 3}
+        ]
+    }
+}
+
+
+def get_methodology_info(methodology: StoryMethodology) -> Dict[str, Any]:
+    """Metodoloji bilgilerini döndür"""
+    return METHODOLOGY_DEFINITIONS.get(methodology, METHODOLOGY_DEFINITIONS[StoryMethodology.SAVE_THE_CAT])
+
+
+def get_methodology_steps(methodology: StoryMethodology) -> List[Dict[str, Any]]:
+    """Metodoloji adımlarını döndür"""
+    info = get_methodology_info(methodology)
+    return info.get("steps", [])
 
 
 class ProjectStatus(str, Enum):
@@ -60,15 +197,19 @@ class CharacterCard(BaseModel):
 
 class Beat(BaseModel):
     """
-    Save the Cat beat (vuruş).
-    Blake Snyder'ın 15 vuruşluk şablonundan bir vuruş.
+    Hikaye adımı/vuruşu.
+    Her metodoloji için kullanılabilir esnek yapı.
     """
-    number: int = Field(ge=1, le=15, description="Beat numarası (1-15)")
+    number: int = Field(ge=1, description="Beat/Adım numarası")
     name: str = Field(
-        description="Beat adı (Opening Image, Theme Stated, Catalyst vb.)"
+        description="Adım adı (Opening Image, Catalyst, Weakness vb.)"
+    )
+    english_name: Optional[str] = Field(
+        default=None,
+        description="İngilizce adı (referans için)"
     )
     description: str = Field(
-        description="Bu beatte ne olur - kısa özet"
+        description="Bu adımda ne olur - kısa özet"
     )
     estimated_duration_seconds: int = Field(
         ge=0,
@@ -76,34 +217,43 @@ class Beat(BaseModel):
     )
     key_moment: Optional[str] = Field(
         default=None,
-        description="Bu beatteki en kritik an"
+        description="Bu adımdaki en kritik an"
+    )
+    act: int = Field(
+        default=1,
+        ge=1, le=3,
+        description="Hangi perdede (1, 2 veya 3)"
     )
 
 
 class BeatSheet(BaseModel):
     """
-    15 vuruşluk hikaye iskeleti.
-    Save the Cat metodolojisi.
+    Hikaye iskeleti - Metodolojiye göre esnek adım sayısı.
+    Save the Cat (15), Syd Field (8), Truby (7), Hero's Journey (12), Story Circle (8)
     """
+    methodology: StoryMethodology = Field(
+        default=StoryMethodology.SAVE_THE_CAT,
+        description="Kullanılan metodoloji"
+    )
     beats: List[Beat] = Field(
-        min_length=15,
-        max_length=15,
-        description="15 adet beat"
+        min_length=1,
+        description="Hikaye adımları listesi"
     )
     total_duration_minutes: int = Field(
         ge=1,
         description="Toplam süre (dakika)"
     )
-    act_one_end: int = Field(
-        default=3,
+    # Perde sınırları - metodolojiye göre otomatik hesaplanabilir
+    act_one_end: Optional[int] = Field(
+        default=None,
         description="1. Perde sonu (beat numarası)"
     )
-    midpoint: int = Field(
-        default=8,
-        description="Midpoint (beat numarası)"
+    midpoint: Optional[int] = Field(
+        default=None,
+        description="Midpoint/Orta nokta (beat numarası)"
     )
-    act_two_end: int = Field(
-        default=12,
+    act_two_end: Optional[int] = Field(
+        default=None,
         description="2. Perde sonu (beat numarası)"
     )
 
@@ -173,6 +323,10 @@ class Screenplay(BaseModel):
     Aşamalı olarak doldurulur.
     """
     title: str = Field(description="Film başlığı")
+    methodology: StoryMethodology = Field(
+        default=StoryMethodology.SAVE_THE_CAT,
+        description="Kullanılan hikaye metodolojisi"
+    )
     source_summary: Optional[str] = Field(
         default=None,
         description="Kaynak materyalin özeti"
