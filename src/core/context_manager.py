@@ -49,7 +49,10 @@ class ContextManager:
         # Bileşen takibi
         self._components: Dict[str, ContextComponent] = {}
         
-        # Kümülatif kullanım
+        # Son kullanım (mevcut context boyutu)
+        self._last_usage = TokenUsage()
+        
+        # Toplam harcanan token (birikimli - fatura için)
         self._total_usage = TokenUsage()
         
         # Geçmiş kullanımlar (her istek için)
@@ -120,14 +123,31 @@ class ContextManager:
     # ==================== TOKEN TAKİBİ ====================
     
     def record_usage(self, usage: TokenUsage) -> None:
-        """Token kullanımı kaydet"""
+        """
+        Token kullanımı kaydet.
+        
+        ÖNEMLİ: Gemini API'de prompt_token_count, o anki çağrıdaki
+        toplam input tokenini gösterir (cache + history + yeni mesaj).
+        Bu değeri birikimli toplamamak lazım!
+        
+        - prompt_tokens: Son çağrının context boyutu (gösterilecek)
+        - total_tokens: Oturum boyunca toplam harcanan token
+        """
         self._usage_history.append(usage)
         
-        # Kümülatif güncelle
-        self._total_usage.prompt_tokens += usage.prompt_tokens
-        self._total_usage.cached_tokens += usage.cached_tokens
+        # SON çağrının değerlerini sakla (birikimli DEĞİL)
+        # Bu değer mevcut context boyutunu gösterir
+        self._last_usage = usage
+        
+        # Toplam harcanan token (birikimli) - fatura için
         self._total_usage.output_tokens += usage.output_tokens
         self._total_usage.total_tokens += usage.total_tokens
+        
+        # Cached tokens en son değeri al
+        self._total_usage.cached_tokens = usage.cached_tokens
+        
+        # Prompt tokens = son değer (context boyutu)
+        self._total_usage.prompt_tokens = usage.prompt_tokens
     
     @property
     def current_tokens(self) -> int:

@@ -219,19 +219,19 @@ async def delete_project(project_id: str):
 @app.post("/api/v1/projects/{project_id}/source")
 async def upload_source(project_id: str, file: UploadFile = File(...)):
     """Kaynak materyal yükle"""
+    from fastapi.concurrency import run_in_threadpool
+    from datetime import datetime
+    
     session = get_session(project_id)
     
     # Dosyayı kaydet
     data_dir = Path("data/projects") / project_id
     data_dir.mkdir(parents=True, exist_ok=True)
     
-    # Dosya adını sanitize et (Türkçe karakter sorununu çöz)
-    import unicodedata
-    safe_filename = unicodedata.normalize('NFKD', file.filename).encode('ascii', 'ignore').decode('ascii')
-    if not safe_filename:
-        # Tüm karakterler filtrelendiyse basit isim kullan
-        ext = Path(file.filename).suffix if '.' in file.filename else '.txt'
-        safe_filename = f"source_{project_id}{ext}"
+    # Dosya adına timestamp ekle (üzerine yazma sorununu önle)
+    timestamp = int(datetime.now().timestamp())
+    ext = Path(file.filename).suffix if '.' in file.filename else '.txt'
+    safe_filename = f"source_{project_id}_{timestamp}{ext}"
     
     file_path = data_dir / safe_filename
     content = await file.read()
@@ -239,9 +239,9 @@ async def upload_source(project_id: str, file: UploadFile = File(...)):
     with open(file_path, "wb") as f:
         f.write(content)
     
-    # Gemini Files API'ye yükle
+    # Gemini Files API'ye yükle (thread pool'da çalıştır - event loop'u bloklamaz)
     try:
-        file_uri = session.upload_source(str(file_path))
+        file_uri = await run_in_threadpool(session.upload_source, str(file_path))
         
         return {
             "success": True,
@@ -421,6 +421,8 @@ async def write_next_scene(project_id: str):
 @app.get("/api/v1/projects/{project_id}/senaryo/scenes/next/stream")
 async def write_next_scene_stream(project_id: str):
     """Sıradaki sahneyi streaming olarak yaz"""
+    import json as json_lib
+    
     service = get_service(project_id)
     screenplay = screenplays.get(project_id)
     
@@ -430,10 +432,13 @@ async def write_next_scene_stream(project_id: str):
     async def generate():
         try:
             for chunk in service.write_next_scene(screenplay.scene_outlines, stream=True):
-                yield f"data: {chunk}\n\n"
+                # SSE protokolü için JSON serialize et (\n sorununu önle)
+                payload = json_lib.dumps({"text": chunk}, ensure_ascii=False)
+                yield f"data: {payload}\n\n"
             yield "data: [DONE]\n\n"
         except Exception as e:
-            yield f"data: [ERROR] {str(e)}\n\n"
+            error_payload = json_lib.dumps({"error": str(e)}, ensure_ascii=False)
+            yield f"data: {error_payload}\n\n"
     
     return StreamingResponse(generate(), media_type="text/event-stream")
 

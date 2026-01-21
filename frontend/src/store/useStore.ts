@@ -290,11 +290,25 @@ export const useStore = create<AppState>((set, get) => ({
                     set({ isStreaming: false, currentStep: 'writing' });
                     // Sahneyi yeniden yükle
                     get().selectProject(currentProject.id);
-                } else if (event.data.startsWith('[ERROR]')) {
-                    eventSource.close();
-                    set({ isStreaming: false, error: event.data });
                 } else {
-                    get().appendStreamingText(event.data);
+                    try {
+                        // Backend'den gelen JSON payload'ı parse et
+                        const payload = JSON.parse(event.data);
+                        if (payload.error) {
+                            eventSource.close();
+                            set({ isStreaming: false, error: payload.error });
+                        } else if (payload.text) {
+                            get().appendStreamingText(payload.text);
+                        }
+                    } catch (e) {
+                        // JSON parse hatası - eski format olabilir
+                        if (event.data.startsWith('[ERROR]')) {
+                            eventSource.close();
+                            set({ isStreaming: false, error: event.data });
+                        } else {
+                            get().appendStreamingText(event.data);
+                        }
+                    }
                 }
             };
 
