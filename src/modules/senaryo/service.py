@@ -259,9 +259,14 @@ class ScenarioService:
         # Streaming için chat API kullan
         full_text = ""
         
-        for chunk in self.session.gemini.generate_stream(
+        # generate_content_stream metodunu kullan
+        model = self.session.project.config.scenario_model.value
+        cache_id = f"{self.session.project_id}_{self.module.value}"
+        
+        for chunk in self.session.gemini.generate_content_stream(
+            model=model,
             prompt=prompt,
-            model=self.session.project.config.scenario_model
+            cache_id=cache_id
         ):
             full_text += chunk
             yield chunk

@@ -200,7 +200,11 @@ class ProjectSession:
         cache_id: Optional[str] = None
     ) -> str:
         """
-        Modül için chat başlat.
+        Modül için chat başlat veya mevcut chat'i kullan.
+        
+        ÖNEMLİ: Gemini API'de chat, client-side bir wrapper'dır.
+        Chat silindiğinde konuşma geçmişi (context) kaybolur.
+        Bu nedenle mevcut chat varsa silmek yerine yeniden kullanıyoruz.
         
         Args:
             module: Modül türü
@@ -211,9 +215,14 @@ class ProjectSession:
         """
         chat_id = f"{self.project_id}_{module.value}_chat"
         
-        # Önceki chat varsa sil
+        # Mevcut chat varsa ve memory'de ise, aynısını kullan (context korunur)
         if module.value in self._active_chats:
-            self.gemini.delete_chat(self._active_chats[module.value])
+            existing_chat_id = self._active_chats[module.value]
+            if existing_chat_id in self.gemini._chats:
+                logger.info(f"Mevcut chat oturumu kullanılıyor (context korunuyor): {existing_chat_id}")
+                return existing_chat_id
+            # Memory'de yok (server restart sonrası) - yeniden oluştur
+            logger.info(f"Chat memory'de yok, yeniden oluşturuluyor: {existing_chat_id}")
         
         # Model ve thinking level seç
         model = self._get_model_for_module(module)

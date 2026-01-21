@@ -482,6 +482,55 @@ class GeminiClient:
         
         return result, usage
     
+    def generate_content_stream(
+        self,
+        model: str,
+        prompt: str,
+        cache_id: Optional[str] = None,
+        thinking_level: ThinkingLevel = ThinkingLevel.HIGH
+    ) -> Generator[str, None, TokenUsage]:
+        """
+        Streaming içerik üret (chat oturumu olmadan).
+        
+        Args:
+            model: Model adı
+            prompt: Prompt
+            cache_id: Kullanılacak cache ID (opsiyonel)
+            thinking_level: Düşünme seviyesi
+            
+        Yields:
+            Her chunk'taki metin
+            
+        Returns:
+            TokenUsage (generator bitince)
+        """
+        config = {
+            "thinking_config": types.ThinkingConfig(
+                thinking_level=thinking_level.value
+            )
+        }
+        
+        # Cache varsa ekle
+        if cache_id:
+            cache_info = self._caches.get(cache_id)
+            if cache_info:
+                config["cached_content"] = cache_info.cache_name
+        
+        usage = TokenUsage()
+        
+        # Streaming response al
+        for chunk in self._client.models.generate_content_stream(
+            model=model,
+            contents=prompt,
+            config=types.GenerateContentConfig(**config)
+        ):
+            if chunk.text:
+                yield chunk.text
+            if hasattr(chunk, "usage_metadata") and chunk.usage_metadata:
+                usage = self._parse_usage(chunk.usage_metadata)
+        
+        return usage
+    
     # ==================== YARDIMCI METODLAR ====================
     
     def count_tokens(self, model: str, text: str) -> int:

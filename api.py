@@ -450,9 +450,80 @@ async def write_next_scene(project_id: str):
 
 @app.get("/api/v1/projects/{project_id}/senaryo/scenes/next/stream")
 async def write_next_scene_stream(project_id: str):
-    """Sıradaki sahneyi streaming olarak yaz (devre dışı - şimdilik)"""
-    # NOT: Streaming şimdilik devre dışı, normal endpoint kullanın
-    raise HTTPException(status_code=501, detail="Streaming şimdilik devre dışı. Normal endpoint kullanın.")
+    """Sıradaki sahneyi SSE (Server-Sent Events) ile streaming olarak yaz"""
+    import json
+    
+    session = get_session(project_id)
+    service = get_service(project_id)
+    screenplay = session.screenplay
+    
+    if not screenplay or not screenplay.scene_outlines:
+        # SSE formatında hata dön
+        async def error_generator():
+            yield f"data: {json.dumps({'error': 'Önce sahne listesi oluşturulmalı'})}\n\n"
+        return StreamingResponse(error_generator(), media_type="text/event-stream")
+    
+    async def event_generator():
+        """SSE event generator"""
+        try:
+            # Streaming modunda sahne yaz
+            scene_generator = service.write_next_scene(
+                screenplay.scene_outlines,
+                stream=True
+            )
+            
+            full_text = ""
+            for chunk in scene_generator:
+                if chunk:
+                    full_text += chunk
+                    # SSE formatı: data: {...}\n\n
+                    payload = json.dumps({"text": chunk, "type": "chunk"})
+                    yield f"data: {payload}\n\n"
+            
+            # Final sonuç - generator'dan SceneResponse gelir
+            # Ama generator protocol'ü farklı çalışıyor, result zor
+            # Bu yüzden full_text'i parse etmeye çalış
+            try:
+                scene_data = json.loads(full_text)
+                result_payload = json.dumps({
+                    "type": "complete",
+                    "scene": scene_data
+                })
+                yield f"data: {result_payload}\n\n"
+                
+                # Screenplay'e kaydet
+                from src.models.screenplay import Scene, SceneResponse
+                scene_response = SceneResponse(**scene_data)
+                screenplay.scenes.append(scene_response.scene)
+                session.save_screenplay()
+                
+            except json.JSONDecodeError:
+                # Parse edilemezse raw text olarak kaydet
+                logger.warning("Streaming sonucu JSON olarak parse edilemedi")
+                yield f"data: {json.dumps({'type': 'complete', 'raw_text': full_text[:500]})}\n\n"
+            
+            # Stream sonu
+            yield "data: [DONE]\n\n"
+            
+        except ValueError as e:
+            # Tüm sahneler tamamlandı
+            payload = json.dumps({"type": "complete", "message": str(e), "all_scenes_completed": True})
+            yield f"data: {payload}\n\n"
+            yield "data: [DONE]\n\n"
+        except Exception as e:
+            logger.error(f"Streaming hatası: {e}")
+            payload = json.dumps({"error": str(e)})
+            yield f"data: {payload}\n\n"
+    
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"  # nginx için
+        }
+    )
 
 @app.put("/api/v1/projects/{project_id}/senaryo/scenes/{scene_number}")
 async def revise_scene(project_id: str, scene_number: int, request: ReviseSceneRequest):
