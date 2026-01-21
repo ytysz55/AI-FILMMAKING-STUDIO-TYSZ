@@ -163,6 +163,9 @@ class ContextManager:
         """
         Durum kontrolü yap.
         
+        Gemini API'den dönen gerçek token kullanımını gösterir.
+        _total_usage.prompt_tokens: Toplam prompt (input) token kullanımı
+        
         Returns:
             {
                 "level": "ok" | "warning" | "critical",
@@ -173,33 +176,43 @@ class ContextManager:
                 "remaining": int
             }
         """
-        percentage = self.usage_percentage / 100  # 0-1 arası
+        # Gerçek token kullanımı (Gemini API'den gelen)
+        real_tokens = self._total_usage.prompt_tokens
         
-        if percentage >= self.CRITICAL_THRESHOLD:
+        # Percentage hesapla (gerçek kullanım bazında)
+        real_percentage = (real_tokens / self.max_tokens) * 100 if self.max_tokens > 0 else 0
+        real_remaining = self.max_tokens - real_tokens
+        
+        percentage_ratio = real_percentage / 100  # 0-1 arası
+        
+        if percentage_ratio >= self.CRITICAL_THRESHOLD:
             level = "critical"
             message = (
-                f"⚠️ KRİTİK: Token limiti %{percentage*100:.1f} kullanıldı! "
-                f"Sadece {self.remaining_tokens:,} token kaldı."
+                f"⚠️ KRİTİK: Token limiti %{real_percentage:.1f} kullanıldı! "
+                f"Sadece {real_remaining:,} token kaldı."
             )
-        elif percentage >= self.WARNING_THRESHOLD:
+        elif percentage_ratio >= self.WARNING_THRESHOLD:
             level = "warning"
             message = (
-                f"⚡ UYARI: Token limiti %{percentage*100:.1f} kullanıldı. "
-                f"{self.remaining_tokens:,} token kaldı."
+                f"⚡ UYARI: Token limiti %{real_percentage:.1f} kullanıldı. "
+                f"{real_remaining:,} token kaldı."
             )
         else:
             level = "ok"
-            message = f"✅ Token durumu normal: %{percentage*100:.1f} kullanıldı."
+            message = f"✅ Token durumu normal: %{real_percentage:.1f} kullanıldı."
         
         return {
             "level": level,
             "message": message,
-            "current_tokens": self.current_tokens,
+            "current_tokens": real_tokens,
             "max_tokens": self.max_tokens,
-            "percentage": self.usage_percentage,
-            "remaining": self.remaining_tokens,
-            "cached_tokens": self.cached_tokens,
-            "cache_ratio": (self.cached_tokens / self.current_tokens * 100) if self.current_tokens > 0 else 0
+            "percentage": real_percentage,
+            "remaining": real_remaining,
+            "cached_tokens": self._total_usage.cached_tokens,
+            "cache_ratio": (self._total_usage.cached_tokens / real_tokens * 100) if real_tokens > 0 else 0,
+            # Ek bilgiler
+            "total_output_tokens": self._total_usage.output_tokens,
+            "total_tokens_all": self._total_usage.total_tokens
         }
     
     def can_add(self, estimated_tokens: int) -> bool:
@@ -294,3 +307,14 @@ class ContextManager:
                 "total_tokens": self._total_usage.total_tokens
             }
         }
+    
+    def load_from_dict(self, data: Dict) -> None:
+        """Dict'ten durumu yükle (deserialization için)"""
+        if "total_usage" in data:
+            usage_data = data["total_usage"]
+            self._total_usage = TokenUsage(
+                prompt_tokens=usage_data.get("prompt_tokens", 0),
+                cached_tokens=usage_data.get("cached_tokens", 0),
+                output_tokens=usage_data.get("output_tokens", 0),
+                total_tokens=usage_data.get("total_tokens", 0)
+            )

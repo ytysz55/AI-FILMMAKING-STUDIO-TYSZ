@@ -149,9 +149,9 @@ export interface ContextStatus {
     current_tokens: number;
     max_tokens: number;
     percentage: number;
-    remaining: number;
-    cached_tokens: number;
-    cache_ratio: number;
+    remaining?: number;
+    cached_tokens?: number;
+    cache_ratio?: number;
 }
 
 export interface AppState {

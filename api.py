@@ -129,7 +129,25 @@ async def create_project(request: CreateProjectRequest):
 
 @app.get("/api/v1/projects")
 async def list_projects():
-    """Tüm projeleri listele"""
+    """Tüm projeleri listele - RAM ve disk'ten"""
+    # Disk'teki projeleri de yükle (server restart durumu için)
+    disk_projects = ProjectSession.list_projects()
+    
+    # Disk'teki projeler RAM'de yoksa yükle
+    for dp in disk_projects:
+        if dp["id"] not in projects:
+            try:
+                session = ProjectSession.load(dp["id"])
+                projects[dp["id"]] = session.project
+                sessions[dp["id"]] = session
+                
+                # Screenplay varsa RAM'e yükle
+                if session.screenplay:
+                    screenplays[dp["id"]] = session.screenplay
+                    
+            except Exception as e:
+                print(f"Proje yüklenemedi: {dp['id']}, hata: {e}")
+    
     return {
         "projects": [
             {
@@ -160,6 +178,9 @@ async def get_project(project_id: str):
 @app.delete("/api/v1/projects/{project_id}")
 async def delete_project(project_id: str):
     """Projeyi sil"""
+    import shutil
+    
+    # RAM'den sil
     if project_id in projects:
         del projects[project_id]
     if project_id in sessions:
@@ -168,6 +189,14 @@ async def delete_project(project_id: str):
         del services[project_id]
     if project_id in screenplays:
         del screenplays[project_id]
+    
+    # Disk'ten de sil
+    project_dir = Path("data/projects") / project_id
+    if project_dir.exists():
+        try:
+            shutil.rmtree(project_dir)
+        except Exception as e:
+            print(f"Proje klasörü silinemedi: {e}")
     
     return {"success": True, "message": "Proje silindi"}
 
@@ -213,6 +242,7 @@ async def upload_source(project_id: str, file: UploadFile = File(...)):
 async def analyze_source(project_id: str):
     """Kaynağı analiz et ve 3 konsept öner"""
     service = get_service(project_id)
+    session = sessions.get(project_id)
     
     try:
         result = service.analyze_source()
@@ -228,6 +258,11 @@ async def analyze_source(project_id: str):
             screenplays[project_id].concepts = result.concepts
             screenplays[project_id].source_summary = result.source_summary
         
+        # AUTO-SAVE: Disk'e kaydet
+        if session:
+            session.screenplay = screenplays[project_id]
+            session.save_screenplay()
+        
         return {
             "success": True,
             "concepts": [c.model_dump() for c in result.concepts],
@@ -241,6 +276,7 @@ async def analyze_source(project_id: str):
 async def select_concept(project_id: str, request: SelectConceptRequest):
     """Konsept seç ve karakter kartı oluştur"""
     service = get_service(project_id)
+    session = sessions.get(project_id)
     
     duration = request.duration_minutes or projects[project_id].config.target_duration_minutes
     screenplay = screenplays.get(project_id)
@@ -257,6 +293,11 @@ async def select_concept(project_id: str, request: SelectConceptRequest):
             screenplay.selected_concept_index = request.concept_index
             screenplay.protagonist = result.protagonist
         
+        # AUTO-SAVE: Disk'e kaydet
+        if session and screenplay:
+            session.screenplay = screenplay
+            session.save_screenplay()
+        
         return {
             "success": True,
             "protagonist": result.protagonist.model_dump(),
@@ -270,6 +311,7 @@ async def select_concept(project_id: str, request: SelectConceptRequest):
 async def create_beat_sheet(project_id: str):
     """Beat sheet (15 vuruş) oluştur"""
     service = get_service(project_id)
+    session = sessions.get(project_id)
     
     try:
         # Chat history sayesinde AI önceki konuşmaları hatırlıyor
@@ -278,6 +320,11 @@ async def create_beat_sheet(project_id: str):
         # Screenplay güncelle
         if project_id in screenplays:
             screenplays[project_id].beat_sheet = result.beat_sheet
+        
+        # AUTO-SAVE: Disk'e kaydet
+        if session and project_id in screenplays:
+            session.screenplay = screenplays[project_id]
+            session.save_screenplay()
         
         return {
             "success": True,
@@ -301,12 +348,18 @@ async def update_beat_sheet(project_id: str, beat_sheet: BeatSheet):
 async def create_scene_outlines(project_id: str):
     """Zaman ayarlı sahne listesi oluştur"""
     service = get_service(project_id)
+    session = sessions.get(project_id)
     
     try:
         result = service.create_scene_outlines()
         
         # Screenplay güncelle
         screenplays[project_id].scene_outlines = result.outlines
+        
+        # AUTO-SAVE: Disk'e kaydet
+        if session:
+            session.screenplay = screenplays[project_id]
+            session.save_screenplay()
         
         return {
             "success": True,
@@ -321,6 +374,7 @@ async def create_scene_outlines(project_id: str):
 async def write_next_scene(project_id: str):
     """Sıradaki sahneyi yaz"""
     service = get_service(project_id)
+    session = sessions.get(project_id)
     screenplay = screenplays.get(project_id)
     
     if not screenplay or not screenplay.scene_outlines:
@@ -331,6 +385,11 @@ async def write_next_scene(project_id: str):
         
         # Screenplay güncelle
         screenplay.scenes.append(result.scene)
+        
+        # AUTO-SAVE: Her sahne sonrası disk'e kaydet
+        if session:
+            session.screenplay = screenplay
+            session.save_screenplay()
         
         return {
             "success": True,

@@ -238,6 +238,22 @@ class ProjectSession:
         if not chat_id:
             raise ValueError(f"Modül için aktif chat yok: {module.value}")
         
+        # Server restart sonrası chat memory'de olmayabilir - auto-recovery
+        if chat_id not in self.gemini._chats:
+            # Cache ID'yi bul
+            cache_id = f"{self.project_id}_{module.value}"
+            
+            # Yeniden chat oluştur (cache'i kullanarak)
+            model = self._get_model_for_module(module)
+            thinking = self._get_thinking_for_module(module)
+            
+            self.gemini.create_chat(
+                chat_id=chat_id,
+                model=model,
+                cache_id=cache_id,
+                thinking_level=thinking
+            )
+        
         # Mesaj gönder
         response, usage = self.gemini.send_message(chat_id, message, stream)
         
@@ -278,6 +294,20 @@ class ProjectSession:
         
         # Chat oturumu varsa ve kullanılacaksa, chat üzerinden structured output al
         if use_chat and chat_id:
+            # Server restart sonrası chat memory'de olmayabilir - auto-recovery
+            if chat_id not in self.gemini._chats:
+                # Cache ID'yi bul ve chat'i yeniden oluştur
+                target_cache_id = cache_id or f"{self.project_id}_{module.value}"
+                model = self._get_model_for_module(module)
+                thinking = self._get_thinking_for_module(module)
+                
+                self.gemini.create_chat(
+                    chat_id=chat_id,
+                    model=model,
+                    cache_id=target_cache_id,
+                    thinking_level=thinking
+                )
+            
             result, usage = self.gemini.send_message_structured(
                 chat_id=chat_id,
                 message=prompt,
@@ -405,11 +435,26 @@ class ProjectSession:
         session.project = project
         session._active_chats = state.get("active_chats", {})
         
+        # Context bilgilerini yükle (kümülatif token kullanımı)
+        if "context" in state:
+            session.context.load_from_dict(state["context"])
+        
         # Senaryo varsa yükle
         screenplay_file = session.project_dir / "screenplay.json"
         if screenplay_file.exists():
             with open(screenplay_file, "r", encoding="utf-8") as f:
                 session.screenplay = Screenplay.model_validate_json(f.read())
+        
+        # Cache bilgilerini GeminiClient'a aktar (server restart sonrası recovery)
+        for cache_info in project.active_caches:
+            # Cache ID'yi project_id + module şeklinde oluştur
+            cache_id = cache_info.cache_name.split("/")[-1] if "/" in cache_info.cache_name else cache_info.cache_name
+            # Senaryo modülü için cache_id oluştur
+            for module in ["senaryo", "asset", "shotlist", "storyboard"]:
+                if module in cache_id or cache_id.endswith(module):
+                    full_cache_id = f"{project_id}_{module}"
+                    session.gemini._caches[full_cache_id] = cache_info
+                    break
         
         return session
     

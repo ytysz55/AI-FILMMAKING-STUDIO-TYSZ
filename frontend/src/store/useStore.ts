@@ -298,6 +298,9 @@ export const useStore = create<AppState>((set, get) => ({
                     isLoading: false,
                     currentStep: 'writing'
                 });
+
+                // Context durumunu güncelle
+                get().refreshContextStatus();
             } catch (error) {
                 set({ error: (error as Error).message, isLoading: false });
                 throw error;
