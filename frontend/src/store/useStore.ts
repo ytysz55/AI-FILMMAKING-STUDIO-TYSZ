@@ -137,16 +137,36 @@ export const useStore = create<AppState>((set, get) => ({
         set({ isLoading: true, error: null });
         try {
             const response = await api.project.get(projectId);
+
+            // Mevcut duruma göre workflow adımını belirle
+            let step: WorkflowStep = 'upload';
+            const screenplay = response.screenplay;
+
+            if (screenplay?.scenes && screenplay.scenes.length > 0) {
+                step = 'writing';
+            } else if (screenplay?.scene_outlines && screenplay.scene_outlines.length > 0) {
+                step = 'scene_outline';
+            } else if (screenplay?.beat_sheet) {
+                step = 'beat_sheet';
+            } else if (screenplay?.protagonist) {
+                step = 'character_card';
+            } else if (screenplay?.concepts && screenplay.concepts.length > 0) {
+                step = 'select_concept';
+            } else if (response.project?.source_file_uri) {
+                step = 'analyze';
+            }
+
             set({
                 currentProject: response.project,
                 screenplay: response.screenplay,
                 scenes: response.screenplay?.scenes || [],
                 sceneOutlines: response.screenplay?.scene_outlines || [],
                 beatSheet: response.screenplay?.beat_sheet || null,
+                protagonist: response.screenplay?.protagonist || null,
                 concepts: response.screenplay?.concepts || [],
                 contextStatus: response.context_status,
                 isLoading: false,
-                currentStep: 'upload'
+                currentStep: step
             });
         } catch (error) {
             set({ error: (error as Error).message, isLoading: false });

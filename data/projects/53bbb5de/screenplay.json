@@ -1,0 +1,50 @@
+{
+  "title": "test",
+  "source_summary": "Prof. Dr. Ahmet Taşağıl'ın 'Kök Tengri'nin Çocukları' adlı eseri, İslam öncesi Türk tarihini Avrasya coğrafyasındaki boy sistemi, göç hareketleri ve devlet modelleri üzerinden inceler. Kaynak yetersizliği ve taraflı Çin kayıtlarına rağmen, Türklerin sosyal dayanışma, demir işçiliği ve atlı kültür sayesinde geliştirdikleri özgün yaşam biçimini ve Gök-Türk modeli gibi kurumsal yapıların tarihsel sürekliliğini analiz eder.",
+  "concepts": [
+    {
+      "genre": "Epik / Tarihi Aksiyon",
+      "logline": "Demirci bir boyun kölelikten cihan imparatorluğuna yükselişini, örste dövülen kızgın çeliğin ve bozkırın tozuna karışan kanın hikayesi.",
+      "tone": "Sert, Görkemli, Hayatta Kalma Odaklı",
+      "target_audience": "Tarihi epik sevenler, aksiyon meraklıları, Türk mitolojisi ve tarihi takipçileri",
+      "unique_selling_point": "Hollywood standartlarında 'Visual Decompression' tekniğiyle, Orta Asya demir işçiliğinin ve süvari taktiklerinin her saniyesinin fiziksel gerçekçilikle sunulması."
+    },
+    {
+      "genre": "Hayatta Kalma / Macera Dram",
+      "logline": "Uçsuz bucaksız Sibirya steplerinde, doğanın acımasız soğuğuna ve düşman kabilelerin baskınına karşı, bir boyun kutsal yaylaya ulaşmak için verdiği bin kilometrelik göç mücadelesi.",
+      "tone": "Karanlık, Klostrofobik, Doğalcı",
+      "target_audience": "Survival türü hayranları, antropolojik sinema meraklıları",
+      "unique_selling_point": "Diyalogdan ziyade 'Ses Simülasyonu' ve fiziksel eylemlerle (karın çatırtısı, atın nefesi, donmuş deri sesi) göçün dehşetini hissettiren hiper-gerçekçi anlatım."
+    },
+    {
+      "genre": "Politik / Tarihi Gerilim",
+      "logline": "Çin sarayının entrikaları ile bozkırın savaş meclisleri arasında sıkışan bir kağanın, boyları bir arada tutmak için verdiği stratejik ve kanlı satranç oyunu.",
+      "tone": "Soğuk, Stratejik, Gerilimli",
+      "target_audience": "Politik dram ve savaş sanatı meraklıları",
+      "unique_selling_point": "Tersine mühendislik yöntemiyle, Çin kaynaklarındaki 'barbar' imgesini yıkan, Türk boy sisteminin karmaşık sosyal ve askeri hiyerarşisini mikro-eylemlerle deşifre eden bir bakış açısı."
+    }
+  ],
+  "selected_concept_index": 1,
+  "protagonist": {
+    "name": "Bars",
+    "dramatic_need": "Aşılmaz denen karlı bir geçidi aşarak obasını ve son kalan hayvan sürülerini donarak ölmekten kurtarmak.",
+    "point_of_view": "Dünya, Gök Tengri'nin bir sınav alanıdır; doğa merhametsiz bir avcıdır ve sadece en dirençli olanın yaşamasına izin verir.",
+    "attitude": "Sert, pratik ve duygularını bastıran bir tavır; felaket anlarında paniklemek yerine hayatta kalma mekanizmalarını devreye sokar.",
+    "arc": "Filmin başında omuzlarında oguşun (aile birliği) sorumluluğunu taşıyan ve kutunu (ilahi desteğini) kaybetmekten korkan kaygılı bir koruyucuyken, filmin sonunda doğayı alt eden değil, onun bir parçası haline gelerek yaşamı söküp alan sertleşmiş bir hayatta kalana dönüşür.",
+    "backstory": "Babası önceki büyük göçte bir tipi sırasında sürüyü korurken donarak ölmüş, Bars ise henüz genç bir alp iken yıkılmış bir oguşun liderliğini devralmıştır. Babasının ölümünden duyduğu suçluluk, her adımını etkileyen gizli bir motivasyondur.",
+    "flaws": [
+      "Kendi yargılarına duyduğu aşırı güven",
+      "Obasındaki bireylere karşı duygusal mesafelilik",
+      "Hata yapma korkusuyla birleşen inatçılık"
+    ]
+  },
+  "supporting_characters": null,
+  "beat_sheet": null,
+  "scene_outlines": [],
+  "scenes": [],
+  "total_duration_minutes": null,
+  "status": "draft",
+  "created_at": "2026-01-21T19:27:16.459544",
+  "updated_at": "2026-01-21T19:27:16.459550",
+  "optimization_report": null
+}

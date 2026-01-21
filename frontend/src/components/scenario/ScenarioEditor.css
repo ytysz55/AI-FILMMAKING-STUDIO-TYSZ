@@ -181,6 +181,8 @@
     gap: var(--space-4);
     overflow-y: auto;
     padding-right: var(--space-4);
+    max-height: calc(100vh - 300px);
+    padding-bottom: var(--space-8);
 }
 
 /* ==================== SCENE CARD ==================== */
@@ -250,11 +252,26 @@
 .scene-card-content {
     padding: var(--space-6);
     display: none;
+    max-height: 60vh;
+    overflow-y: auto;
 }
 
 .scene-card.expanded .scene-card-content {
     display: block;
     animation: slideUp var(--transition-base) ease;
+}
+
+.scene-card-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scene-card-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scene-card-content::-webkit-scrollbar-thumb {
+    background: var(--color-bg-tertiary);
+    border-radius: 3px;
 }
 
 .scene-action-text {
@@ -263,6 +280,32 @@
     color: var(--color-text-primary);
     white-space: pre-wrap;
     margin-bottom: var(--space-4);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.scene-card-duration {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    margin-right: var(--space-2);
+}
+
+.scene-card.approved {
+    border-left: 3px solid var(--color-accent-green);
+}
+
+.scene-card-actions {
+    display: flex;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: var(--border-subtle);
+}
+
+.scene-card-actions .btn-sm {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-size-xs);
 }
 
 .scene-dialogue {

@@ -110,17 +110,20 @@ async def create_project(request: CreateProjectRequest):
         language=request.language
     )
     
-    project = Project(
-        id=project_id,
-        name=request.name,
-        config=config
+    # ProjectSession oluştur (disk'e de kaydeder)
+    session = ProjectSession(
+        project_name=request.name,
+        config=config,
+        project_id=project_id
     )
     
-    projects[project_id] = project
+    # RAM'e ekle
+    projects[project_id] = session.project
+    sessions[project_id] = session
     
     return ProjectResponse(
         id=project_id,
-        name=project.name,
+        name=session.project.name,
         status="created",
         progress=0,
         token_usage={},
@@ -163,11 +166,23 @@ async def list_projects():
 @app.get("/api/v1/projects/{project_id}")
 async def get_project(project_id: str):
     """Proje detayını al"""
+    # RAM'de yoksa disk'ten yüklemeyi dene
     if project_id not in projects:
-        raise HTTPException(status_code=404, detail="Proje bulunamadı")
+        try:
+            session = ProjectSession.load(project_id)
+            projects[project_id] = session.project
+            sessions[project_id] = session
+            if session.screenplay:
+                screenplays[project_id] = session.screenplay
+        except FileNotFoundError:
+            raise HTTPException(status_code=404, detail="Proje bulunamadı")
     
     project = projects[project_id]
+    
+    # Screenplay: önce screenplays dict, sonra session'dan al
     screenplay = screenplays.get(project_id)
+    if not screenplay and project_id in sessions:
+        screenplay = sessions[project_id].screenplay
     
     return {
         "project": project.model_dump() if hasattr(project, 'model_dump') else project.__dict__,
