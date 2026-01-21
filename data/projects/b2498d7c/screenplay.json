@@ -1,0 +1,356 @@
+{
+  "title": "ger",
+  "methodology": "truby",
+  "source_summary": "Ahmet Taşağıl'ın 'Kök Tengri'nin Çocukları' eseri, İslamiyet öncesi Türk tarihini Avrasya bozkırlarındaki coğrafi zorluklar, boy sistemi ve Gök Türk modeli üzerinden analiz eder. Kaynak materyal, Türklerin kökenlerinden göç hareketlerine, sosyal yapılarından hayvancılığa dayalı ekonomilerine kadar geniş bir spektrumu bilimsel bir titizlikle ve disiplinlerarası bir yöntemle ele almaktadır.",
+  "concepts": [
+    {
+      "genre": "Epik Aksiyon / Tarihi Dram",
+      "logline": "Altay Dağları'nın karlı zirvelerinde demir döven köle bir kabilenin, 'Kök Tengri'nin kutsadığı bir bağımsızlık savaşıyla tarihin ilk 'Türk' devletini kurma mücadelesi.",
+      "tone": "Vahşi, Destansı ve Fiziksel",
+      "target_audience": "Tarihi epik ve hardcore aksiyon severler",
+      "unique_selling_point": "Görsel Genişletme (Visual Decompression) tekniğiyle, Orta Asya'nın dondurucu soğuğunda atların soluğundan demirci örsündeki kıvılcıma kadar her mikro-eylemin hiper-realistik tasviri."
+    },
+    {
+      "genre": "Hayatta Kalma (Survival) / Macera",
+      "logline": "Büyük Hun İmparatorluğu'nun çöküşünden sonra, uçsuz bucaksız Gobi Çölü'nü ve Sibirya taygalarını aşmak zorunda kalan parçalanmış bir boyun, yeni bir yurt bulmak için doğayla ve yabancı ordularla verdiği amansız savaş.",
+      "tone": "Karanlık, Gerilimli ve Sert",
+      "target_audience": "Survival türü ve antropolojik sinema meraklıları",
+      "unique_selling_point": "Bozkır hayatının 'Simulation Fidelity' prensibiyle işlenmesi; avcılık, göç ritüelleri ve kabile içi dayanışmanın ham ve filtresiz ses/görüntü tasarımıyla aktarılması."
+    },
+    {
+      "genre": "Politik Gerilim / Tarihi Gizem",
+      "logline": "Çin sarayının entrikaları ile bozkırın sert kanunları arasında sıkışan bir Gök Türk elçisinin, İpek Yolu'nun kontrolü için verilen gizli bir savaşı durdurma çabası.",
+      "tone": "Zekice, Soğuk ve Stratejik",
+      "target_audience": "Siyasi entrika ve dönem draması izleyicileri",
+      "unique_selling_point": "Farklı dillerdeki (Çin, Bizans, Soğd) kaynakların 'Tersine Mühendislik' ile birleştirilerek, dönemin çok kültürlü diplomatik atmosferinin yüksek subtext ve mikro-mimiklerle görselleştirilmesi."
+    }
+  ],
+  "selected_concept_index": 1,
+  "protagonist": {
+    "name": "Bars",
+    "dramatic_need": "Büyük Hun İmparatorluğu'nun çöküşünden sonra elinde kalan son yirmi kişilik boyunu, yaklaşan dondurucu kış ve peşlerindeki düşman süvarileri yetişmeden önce efsanevi 'Demir Kapı' vadisine ulaştırmak.",
+    "point_of_view": "Dünya, zayıf olanı acımadan yutan devasa bir kurttur; yalnızca Kök Tengri'nin iradesine boyun eğip doğanın dilini çözenler hayatta kalabilir.",
+    "attitude": "Sessiz, gözlemci ve aşırı pragmatik; duyguları kararlarının önüne asla geçemez, her adımı mutlak bir hayatta kalma hesabına dayalıdır.",
+    "arc": "Filmin başında imparatorluğunu ve ailesini kaybetmiş, sadece öfkeyle hareket eden 'yenik bir asker' iken; filmin sonunda bir halkın kaderini sırtlanan ve devletin topraklarda değil insanların birliğinde yaşadığını anlayan 'kurucu bir önder'e dönüşür.",
+    "backstory": "Hun ordusunda bir sınır komutanıydı. Başkentin yakılışını ve merkezi otoritenin dağılışını izledi. Kendi ailesini kurtaramamanın verdiği derin azap, onu bu küçük gruba karşı aşırı korumacı ve sert bir lider yapmıştır.",
+    "flaws": [
+      "Hayatta kalanlık suçluluğu (Survivor's Guilt)",
+      "Yabancılara karşı patolojik boyutta güven sorunu",
+      "Sol bacağındaki eski bir ok yarasından kaynaklanan ve soğukta nükseden fiziksel aksama"
+    ]
+  },
+  "supporting_characters": null,
+  "beat_sheet": {
+    "methodology": "truby",
+    "beats": [
+      {
+        "number": 1,
+        "name": "Zayıflık ve İhtiyaç",
+        "english_name": "Weakness and Need",
+        "description": "Bars, dondurucu rüzgar altında aksayarak ilerlerken, başkentin yanışını hatırlar. Psikolojik olarak 'hayatta kalan suçluluğu' ile felç olmuştur; fiziksel olarak ise bacağındaki yara onu yavaşlatmaktadır. İhtiyacı, devleti toprakta değil, koruduğu insanların ruhunda yeniden inşa etmektir.",
+        "estimated_duration_seconds": 40,
+        "key_moment": "Bars'ın elindeki kırık Hun sancağına bakıp onu kara gömmeye yeltenmesi ama vazgeçmesi.",
+        "act": 1
+      },
+      {
+        "number": 2,
+        "name": "Arzu",
+        "english_name": "Desire",
+        "description": "Bars'ın somut hedefi, peşindeki düşman devriyeleri yetişmeden ve büyük kar fırtınası yolu kapamadan boyunu 'Demir Kapı' adlı korunaklı vadiye ulaştırmaktır.",
+        "estimated_duration_seconds": 40,
+        "key_moment": "Ufukta beliren Demir Kapı'nın siluetini işaret ederek 'Oraya varmalıyız' demesi.",
+        "act": 1
+      },
+      {
+        "number": 3,
+        "name": "Rakip",
+        "english_name": "Opponent",
+        "description": "Genç savaşçı Togan, Bars'ın temkinli planını 'korkaklık' olarak niteler. Togan, Bars'ın zayıf bacağına ve geçmişteki yenilgisine saldırarak liderliğini sorgular. Dış rakip olarak ise yaklaşan düşman atlılarının nal sesleri duyulur.",
+        "estimated_duration_seconds": 50,
+        "key_moment": "Togan'ın kılıcını çekip Bars'ı yüzleşmeye zorlaması ve Bars'ın sadece 'Kar gelince kılıçlar değil, akıllar konuşur' cevabını vermesi.",
+        "act": 2
+      },
+      {
+        "number": 4,
+        "name": "Plan",
+        "english_name": "Plan",
+        "description": "Bars, izlerini kaybettirmek için boyu tuz yataklarının içinden geçirir. Hızdan feragat ederek gizliliği seçer. Togan'ı ise arkadaki izleri temizlemek ve düşmanı yanlış yöne saptırmakla görevlendirerek ona olan güvenini sınar.",
+        "estimated_duration_seconds": 40,
+        "key_moment": "Atların ayaklarına keçeler bağlanması ve sessizce tuz gölünde ilerleyiş.",
+        "act": 2
+      },
+      {
+        "number": 5,
+        "name": "Savaş",
+        "english_name": "Battle",
+        "description": "Vadi girişinde düşman devriyeleriyle sıcak çatışma çıkar. Bars, bacağındaki acıya rağmen ön safta savaşır. Fırtına patlak verir. Bars, Togan'ı kurtarmak için kendini tehlikeye atar ve bir Hun komutanı gibi değil, bir 'baba' gibi dövüşür.",
+        "estimated_duration_seconds": 60,
+        "key_moment": "Bars'ın düşman atlısının kılıcını çıplak elle durdurup Togan'ın hayatını kurtarması.",
+        "act": 2
+      },
+      {
+        "number": 6,
+        "name": "Kendini Keşfetme",
+        "english_name": "Self-Revelation",
+        "description": "Düşman geri çekilirken fırtına dinmeye başlar. Bars, kaybettiği şeyin bir imparatorluk değil, sadece bir toprak parçası olduğunu; asıl hazinenin hayatta kalan bu bir avuç insan olduğunu anlar. Kendini bir 'yenik asker' değil, bir 'kurucu ata' olarak görmeye başlar.",
+        "estimated_duration_seconds": 40,
+        "key_moment": "Bars'ın Togan'a 'Sen benim bacağım, ben senin aklınım; biz artık bir boyuz' diyerek sancağı ona vermesi.",
+        "act": 3
+      },
+      {
+        "number": 7,
+        "name": "Yeni Denge",
+        "english_name": "New Equilibrium",
+        "description": "Grup vadinin içine yerleşir. Bars vadi girişinde durur, bacağı hala aksamaktadır ama bakışı diktir. Kök Tengri'nin maviliği karların arasından süzülür. Yeni bir devletin tohumu bu dar vadide atılmıştır.",
+        "estimated_duration_seconds": 30,
+        "key_moment": "Bars'ın karların üzerine yeni Hun damgasını kazıması.",
+        "act": 3
+      }
+    ],
+    "total_duration_minutes": 5,
+    "act_one_end": 2,
+    "midpoint": 4,
+    "act_two_end": 5
+  },
+  "scene_outlines": [
+    {
+      "scene_number": 1,
+      "location": "UÇSUZ BUCAKSIZ BOZKIR",
+      "time_of_day": "ALACAKARANLIK",
+      "duration_seconds": 20,
+      "brief_description": "Bars, dondurucu rüzgarın altında bacağını sürüyerek boyun önünde ilerler; ufukta yanan başkent hatırasının hayali dumanları yükselir.",
+      "beat_reference": 1,
+      "emotional_arc": "Hüzün ve Fiziksel Acı"
+    },
+    {
+      "scene_number": 2,
+      "location": "SÖNMEKTE OLAN KAMP ATEŞİ",
+      "time_of_day": "GECE",
+      "duration_seconds": 20,
+      "brief_description": "Bars, elindeki yırtık Hun sancağına bakarken geçmişteki başarısızlığıyla yüzleşir; sancağı kara gömmeye niyetlenir ama parmakları geri çekilir.",
+      "beat_reference": 1,
+      "emotional_arc": "İçsel Çatışma ve Suçluluk"
+    },
+    {
+      "scene_number": 3,
+      "location": "KESKİN KAYALIK",
+      "time_of_day": "GÜNDÜZ",
+      "duration_seconds": 40,
+      "brief_description": "Bars, sislerin arasından belli belirsiz görünen 'Demir Kapı' vadisini işaret eder ve boya hayatta kalma sözü verir.",
+      "beat_reference": 2,
+      "emotional_arc": "Umut ve Kararlılık"
+    },
+    {
+      "scene_number": 4,
+      "location": "KARLI VADİ YOLU",
+      "time_of_day": "GÜNDÜZ",
+      "duration_seconds": 25,
+      "brief_description": "Togan, Bars'ın yavaşlığını açıkça eleştirir ve bacağındaki yarayı bir zayıflık işareti olarak göstererek otoritesini sarsar.",
+      "beat_reference": 3,
+      "emotional_arc": "Gerilim ve Meydan Okuma"
+    },
+    {
+      "scene_number": 5,
+      "location": "DONMUŞ IRMAK YATAĞI",
+      "time_of_day": "GÜNDÜZ",
+      "duration_seconds": 25,
+      "brief_description": "Uzaktan gelen nal sesleri duyulur; düşman süvarilerinin yaklaşmakta olduğu gerçeği Togan ve Bars arasındaki gerilimi doruğa çıkarır.",
+      "beat_reference": 3,
+      "emotional_arc": "Panik ve Tehdit"
+    },
+    {
+      "scene_number": 6,
+      "location": "BEYAZ TUZ GÖLÜ",
+      "time_of_day": "GÜNDÜZ",
+      "duration_seconds": 40,
+      "brief_description": "Bars, atların ayaklarına keçe bağlatarak boyu sessizce tuz gölü üzerinden geçirir ve Togan'ı hayati bir keşif göreviyle sınar.",
+      "beat_reference": 4,
+      "emotional_arc": "Stratejik Odak"
+    },
+    {
+      "scene_number": 7,
+      "location": "DEMİR KAPI GİRİŞİ",
+      "time_of_day": "GÜNDÜZ",
+      "duration_seconds": 60,
+      "brief_description": "Düşman devriyeleriyle şiddetli bir çatışma çıkar; Bars, fırtına altında bacağındaki acıya rağmen Togan'ı mutlak bir ölümden kurtarır.",
+      "beat_reference": 5,
+      "emotional_arc": "Patlama ve Kaos"
+    },
+    {
+      "scene_number": 8,
+      "location": "VADİ İÇİ SIĞINAĞI",
+      "time_of_day": "AKŞAMÜSTÜ",
+      "duration_seconds": 40,
+      "brief_description": "Çatışma sonrası sessizlikte Bars, yanan sancak parçasını Togan'a uzatır; artık bir asker değil, bir halkın koruyucusu olduğunu fark eder.",
+      "beat_reference": 6,
+      "emotional_arc": "Kabulleniş ve Aydınlanma"
+    },
+    {
+      "scene_number": 9,
+      "location": "VADİ GİRİŞİ - KAYA DUVARI",
+      "time_of_day": "GÜNDÜZ",
+      "duration_seconds": 30,
+      "brief_description": "Bars, aksayan bacağına rağmen dimdik durarak vadinin girişindeki kayaya yeni Hun damgasını kazır; yeni bir düzenin temeli atılır.",
+      "beat_reference": 7,
+      "emotional_arc": "Huzur ve Yeni Başlangıç"
+    }
+  ],
+  "scenes": [
+    {
+      "scene_number": 1,
+      "header": "SCENE 1: UÇSUZ BUCAKSIZ BOZKIR - ALACAKARANLIK - [SÜRE: 20 Saniye]",
+      "action": "Bars'ın sağ çizmesi buz tutmuş sert kara saplanır. ÇITIRTI. Sol bacağı arkasından ağır bir külçe gibi sürüklenir; karda derin, düzensiz bir yarık bırakır. Bars'ın ağzından çıkan nefes, morarmış dudakları arasında yoğun beyaz bir bulut gibi patlar. Kaşlarına yapışan buz kristalleri her göz kırpışında birbirine çarpar. Uzak ufuk çizgisinde, gökle yerin birleştiği o gri boşlukta, turuncu alevler titreşir. Bu güneşin batışı değil; Ötüken'in hayali külleridir. Kara dumanlar spiral çizerek göğe yükselir. Bars gözlerini kısar. Kirpiklerindeki karlar eriyip yanağına süzülürken omuzları dondurucu rüzgarın yüküyle çöker. Başını hafifçe arkaya çevirir; kürkler içinde titreyen bir avuç insan, birer gölge gibi onu takip eder. Tekrar önüne bakar. Ufuktaki yangın silinir. Yerini mavimsi, sağır edici bir soğuk karanlık alır. Bars, gövdesini ileri eğer. Dişlerini birbirine geçirir. Rüzgar kürküne her çarptığında kamçı sesi duyulur.",
+      "dialogue": null,
+      "duration_seconds": 20,
+      "status": "approved",
+      "revision_count": 0,
+      "notes": "Görsel genişletme ile bacağın fiziksel ağırlığı ve hayali yangın arasındaki kontrast vurgulanmıştır."
+    },
+    {
+      "scene_number": 2,
+      "header": "SCENE 2: SÖNMEKTE OLAN KAMP ATEŞİ - GECE - [SÜRE: 20 Saniye]",
+      "action": "Cılız ateşin turuncu korları gri küle dönerken Bars'ın avucundaki kalın Hun sancağı rüzgarda hafifçe hışırdar. Kumaşın üzerindeki altın işlemeli kurt başı motifi tam ortasından yırtılmıştır; kopuk iplikler ateşin son titrek ışığında zemine titrek gölgeler düşürür. Bars'ın çatlamış parmakları isli ipeğin üzerinde ağır ağır gezinir. Sağ eli yanındaki buz tutmuş zemine uzanır. Parmak uçları kaskatı kar kabuğunu hırsla oyar; buz parçaları çıtırtıyla etrafa saçılır. Karanlık ve dar bir çukur belirir. Bars elindeki yırtık sancağı bu soğuk kuyuya doğru yavaşça indirir. Kumaşın püskülleri karlı zemine dokunur. O anda Bars'ın bileğindeki damarlar belirginleşir, yumruğu istemsizce sıkılır. Kumaş avucunun içinde ezilir. Eli ani bir refleksle geriye fırlar; sancağı göğsündeki kürkün içine çeker. Başını önüne eğer, dişlerini gıcırdatır.",
+      "dialogue": null,
+      "duration_seconds": 20,
+      "status": "approved",
+      "revision_count": 0,
+      "notes": "Visual Decompression tekniğiyle sancağa dokunuş ve vazgeçiş anı mikro detaylarla işlenmiştir."
+    },
+    {
+      "scene_number": 3,
+      "header": "SCENE 3: KESKİN KAYALIK - GÜNDÜZ - [SÜRE: 40 Saniye]",
+      "action": "Bars'ın kaba deriden dikilme çizmesi, buzlanmış keskin bir kaya çıkıntısına oturur. Deri esner. Kar kütlesi topuğunun altından kopup uçuruma süzülür. Bars, gövdesini yukarı, rüzgarın en sert estiği uca çekerken kol kasları gerilir, yıpranmış zırhı GICIRDAR. Kayalığın en sivri ucunda doğrulur. Karşısında bir duvar gibi duran yoğun gri sis tabakası, kamçı gibi çarpan rüzgarın darbesiyle ikiye ayrılır. Kilometrelerce uzakta, iki devasa siyah doruk arasında kılıç yarası gibi duran dar, karanlık bir vadi ağzı belirir. Bars sağ kolunu omuz hizasına ağır ağır kaldırır. Çatlamış işaret parmağı o karanlık geçidi hedefler. Arkasında birikmiş olan boy üyeleri; yüzleri is içinde, omuzlarına sardıkları kürkleri titreyen kadınlar ve sıska çocuklar başlarını yerden kaldırır. Göz bebekleri puslu ufukta o dar yarığı bulur. Bars başını hafifçe geriye, boyuna doğru çevirir. Boyun damarları gerilir. Rüzgar sesini yutmaya çalışırken ağzından çıkan dumanlı nefes yüzünü kaplar.",
+      "dialogue": [
+        {
+          "character": "BARS",
+          "line": "Oraya... Demir Gabı'ya varacaz. Tengri şahidimdir... Hiçbiriniz... Hiçbiriniz bu garda galmayacasınız!",
+          "parenthetical": "Hırıltılı, sarsılmaz bir inatla"
+        }
+      ],
+      "duration_seconds": 40,
+      "status": "approved",
+      "revision_count": 0,
+      "notes": "Sislerin dağılma anı ve Bars'ın parmağıyla gösterdiği hedef arasındaki senkronizasyon, boyun umut kırılmasını tersine çevirmelidir."
+    },
+    {
+      "scene_number": 4,
+      "header": "SCENE 4: KARLI VADİ YOLU - GÜNDÜZ - [SÜRE: 25 Saniye]",
+      "action": "Bars'ın sol bacağı karın üstünde ağır, yarım bir daire çizer; çizmesinin ucu donmuş tabakayı GICIRTILARLA kazıyarak arkada kanlı bir iz bırakır. Togan hışımla öne atılır. Bars'ın tam önünde durur, kar tozları botlarından etrafa saçılır. Togan'ın gözleri Bars'ın uyluğundaki, kirli çaputların arasından sızan kara-kırmızı lekeye kilitlenir. Togan, eldivenli işaret parmağını o titreyen sargıya sertçe uzatır. Bars'ın dudakları gerilir, elindeki asayı karda sabitlemek için parmak boğumları bembeyaz kesilir. Togan başını yanındaki bitkin boy üyelerine çevirip dişlerini göstererek sırıtır, sonra tekrar Bars'ın gözlerinin içine, burnundan dumanlar çıkararak bakar. Bars'ın botunun tam dibine, kara bir balgam fırlatır.",
+      "dialogue": [
+        {
+          "character": "TOGAN",
+          "line": "Görmüyonuz mu? Komutanınızın bacağı onu değil, bizi mezara götürüyü. Bu çürük etle mi aşacaz dağları? Ha?!",
+          "parenthetical": "Tiksintiyle bağırarak"
+        }
+      ],
+      "duration_seconds": 25,
+      "status": "approved",
+      "revision_count": 0,
+      "notes": "Bars'ın fiziksel yetersizliği ve Togan'ın genç enerjisi arasındaki görsel zıtlık vurgulanmıştır."
+    },
+    {
+      "scene_number": 5,
+      "header": "SCENE 5: DONMUŞ IRMAK YATAĞI - GÜNDÜZ - [SÜRE: 25 Saniye]",
+      "action": "Bars aniden durur. Botunun altındaki buz tabakası kılcal damarlar gibi ÇATIRTAYARAK ayrılır. Başını sağa yatırır, tek gözünü kısar. Uzaktan, donmuş toprağa vuran sert ritmik vuruşlar havayı titretir: GÜM-GÜM, GÜM-GÜM. Togan’ın kılıç kabzasını kavrayan parmak boğumları bembeyaz kesilir; eski deri eldiveni metal aksam üzerinde GICIRDAR. Togan, Bars'ın dibine kadar sokulur, genzinden gelen hırıltılı ve sıcak nefesi Bars'ın donmuş yanağına çarpar. Bars istifini bozmaz, gözleri karşıdaki karlı sırtın üzerinde mızrak gibi asılı kalır. Sırtın ucunda, gökyüzünün beyazlığına saplanan üç kara leke belirir: Süvariler. Atların burunlarından çıkan buharlar uzaktan minik bulutlar gibi seçilir. Bars’ın eli, yanındaki ahşap asayı buzun içine daha derin saplar.",
+      "dialogue": [
+        {
+          "character": "TOGAN",
+          "line": "Duyuyon mu? Geldiler... Senin bu topal bacağın yüzünden... Hepimizi burda gıracaklar.",
+          "parenthetical": "Dişlerinin arasından, nefretle fısıldayarak"
+        }
+      ],
+      "duration_seconds": 25,
+      "status": "approved",
+      "revision_count": 0,
+      "notes": "Nal seslerinin yarattığı titreşim ile Togan'ın fiziksel yakınlığı arasındaki gerilim, yaklaşan tehlikeyi somutlaştırmalıdır."
+    },
+    {
+      "scene_number": 6,
+      "header": "SCENE 6: BEYAZ TUZ GÖLÜ - GÜNDÜZ - [SÜRE: 40 Saniye]",
+      "action": "Bars, beyaz tuz tabakasının üzerine diz çöker. Çatlamış parmakları kalın, gri bir keçe parçasını atın ön tırnağının etrafına sarar. Kendir ipini dişleriyle kavrar, asılır; ip keçenin dokusuna derinlemesine gömülür. Atın burnu Bars'ın ensesine sıcak, nemli bir hava üfler. Bars ayağa kalkar, gözleri bembeyaz parlayan göl yüzeyine dikilir. Boyun üyeleri, ayaklarına çaput sarmış halde gölge gibi Bars'ın arkasında dizilir. Atlar adım atar; keçe kaplı tırnaklar tuz tabakasına 'PIF' diye oturur. Toz halindeki tuz kristalleri havaya fırlar, hışırtısız bir ilerleyiş başlar. Bars aniden durur, bakışlarını Togan'ın yüzüne çiviler. Togan'ın elindeki kılıç kabzası titrer. Bars, elindeki asayı Togan'ın göğsüne, tam kalbinin üzerine sertçe bastırır. Togan'ın omuzları gerilir, göz bebekleri titrer. Bars asayı çekmez, baskıyı arttırır; Togan'ın derisi metal zırhın altında ezilir. Bars başıyla ilerideki karlı yamaçları işaret eder.",
+      "dialogue": [
+        {
+          "character": "BARS",
+          "line": "Get gaba (kaba/büyük) tepeye... Gözlerin o sırtın üstünde ossun. Bi gurdun nefesini duysan, garın bi parmak oynadığını görsen geri dönecen. Canın bize emanet, boyun canı da sana... Get imdi!",
+          "parenthetical": "Boğuk, otoriter bir fısıltıyla"
+        },
+        {
+          "character": "TOGAN",
+          "line": "Dönecem... Gözün arkada galmasın... Komutan.",
+          "parenthetical": "Yutkunarak, sesi titreyerek"
+        }
+      ],
+      "duration_seconds": 40,
+      "status": "approved",
+      "revision_count": 0,
+      "notes": "Tuz gölünün sağır edici beyazlığı ve keçe kaplı ayakların çıkardığı boğuk sesler atmosferi güçlendirmelidir. Bars'ın Togan'ı fiziksel olarak asayla yönlendirmesi otoriteyi temsil eder."
+    },
+    {
+      "scene_number": 7,
+      "header": "SCENE 7: DEMİR KAPI GİRİŞİ - GÜNDÜZ - [SÜRE: 60 Saniye]",
+      "action": "Kar taneleri Bars'ın kirpiklerine donmuş iğneler gibi saplanır. Rüzgarın ıslığı mızrak vınlamalarına karışır. Togan, buz tutmuş bir kaya dibinde sırtüstü düşer; mızrağı elinden fırlayıp karların içinde kaybolur. Karşıdaki atlı, yüzünü kapatan demir maskenin ardındaki hırıltısıyla kılıcını havaya kaldırır. Bars'ın sakat bacağı karın içine gömülürken, yarasının etrafındaki deri 'ÇAAAT' diye gerilir; kirli sargıdan taze, buharı tüten kırmızı kan fışkırır. Bars dişlerini birbirine o kadar sert geçirir ki çene kemiği GICIRDAR. Elindeki asayı karın içine çaprazlama saplayıp tüm gövdesini mızrak gibi öne fırlatır. Çizmesi buzu parçalar. Düşman atlısının kılıcı inişe geçtiği an, Bars gövdesini Togan'ın üzerine bir siper gibi atar. Metalin metale çarpma sesi değil, kılıcın Bars'ın omuz zırhına sürtünme sesi 'CIYYYK' diye yankılanır. Bars, sol eliyle atın dizginine yapışır, sağ yumruğunu atın burnuna tüm gücüyle indirir. At kişner, ön ayaklarını havaya diker. Bars yere çömelmiş Togan'ın yakasını kavrar, onu geriye, kayaların korumasına doğru sertçe savurur. Sakat bacağı titrer, karın üzerinde geniş bir kan lekesi büyür. Bars, karda sürüklenen Togan'ın üzerine kapanıp göğsünden gelen hırıltılı bir sesle havayı solur.",
+      "dialogue": [
+        {
+          "character": "BARS",
+          "line": "Galk!... Galk diyürüm sana!... Ölecek vaktin deel!... Gayıların arkasına geç!",
+          "parenthetical": "Boğazından kan gelircesine bağırarak"
+        },
+        {
+          "character": "TOGAN",
+          "line": "Bacaan... Bacaan bitti senin... Bars Komutan!",
+          "parenthetical": "Dehşet içinde, nefes nefese"
+        },
+        {
+          "character": "BARS",
+          "line": "Canım biter, bacaım bitmez!... Yürü!",
+          "parenthetical": "Acıyla inleyerek ama sarsılmaz bir tonla"
+        }
+      ],
+      "duration_seconds": 60,
+      "status": "approved",
+      "revision_count": 0,
+      "notes": "Bars'ın fiziksel fedakarlığı ve bacağındaki yaranın görsel şiddeti, karakter değişiminin kırılma noktasını temsil etmelidir."
+    },
+    {
+      "scene_number": 8,
+      "header": "SCENE 8: VADİ İÇİ SIĞINAĞI - AKŞAMÜSTÜ - [SÜRE: 40 Saniye]",
+      "action": "Bars sırtını pürüzlü kaya duvarına yaslar. Göğüs kafesi, derinden gelen hırıltılı bir sesle körük gibi iner kalkar. Sol bacağı öne doğru uzanmıştır; çizmesinin ucundan süzülen çamurlu su, yerdeki tozla birleşip koyu bir leke oluşturur. Bars elini kürkünün iç cebine atar. Parmakları, o yırtık ve yanık kenarlı Hun sancağını kavrar. Kumaşı dışarı çekerken ipek doku, zırhının metal tokalarına sürtünüp ince bir SES çıkarır. Karşıda çömelmiş, yüzü is ve kan içinde olan Togan'a bakar. Togan başını kaldıramaz, gözleri yerdeki çakıl taşlarına asılı kalır. Bars sancağı iki eliyle açar, yanık kokusunu içine çeker; kumaşın püskülleri parmakları arasından akar. Sağ elini öne uzatır. Sancak, Bars'ın titreyen avucunda Togan'a doğru sarkar. Togan başını kaldırır, göz bebekleri titreyerek sancağın üzerindeki yırtık kurt başına odaklanır. Bars'ın bakışlarındaki o eski, buz gibi asker pırıltısı söner; yerini derin, çatlaklı bir şefkat alır. Togan elini uzatır, parmak uçları yanık kumaşa dokunduğunda Bars'ın bileğindeki damarlar gevşer. Sancağı Togan'ın avucuna bırakır.",
+      "dialogue": [
+        {
+          "character": "BARS",
+          "line": "Al bunu... Artıh bi gomandanın mülkü deel bu. Bu bi boyun nefesidir... Senin elinde dirileceh.",
+          "parenthetical": "Hırıltılı ama babacan bir tonla"
+        },
+        {
+          "character": "TOGAN",
+          "line": "Ben... Ben layıh deelim... Bars Ata.",
+          "parenthetical": "Kısık bir sesle, hıçkırığını tutarak"
+        },
+        {
+          "character": "BARS",
+          "line": "Layıh olan ölür, yaşadan galır... Sen yaşadacan. Bizim yurdumuz artıh bu bez parçası deel, bu canlardır.",
+          "parenthetical": "Gözleri nemlenerek, boyu işaret eder"
+        }
+      ],
+      "duration_seconds": 40,
+      "status": "approved",
+      "revision_count": 0,
+      "notes": "Bars'ın 'Komutan'dan 'Ata'ya (Baba/Ata) dönüşümü bu sahnede Togan'ın hitabıyla mühürlenir. Sancağın devri, fiziksel bir yükün devri gibidir."
+    },
+    {
+      "scene_number": 9,
+      "header": "SCENE 9: VADİ GİRİŞİ - KAYA DUVARI - GÜNDÜZ - [SÜRE: 30 Saniye]",
+      "action": "Bars, sol ayağını buz tutmuş zemine tam ağırlığıyla basar; sakat bacağındaki titremeyi kalça kaslarını son gücüyle sıkarak bastırır. Sırtı, bir mızrak mili kadar düzdür. Sağ eli belindeki ağır bronz bıçağın kemik kabzasını kavrar. Metal, kılıftan 'SIT' sesiyle sıyrılır. Bars, pürüzlü kaya duvarına bir adım yaklaşır. Bıçağın sivri ucunu taşın gri yüzeyine dayar. Omuz kasları kürkün altında tepe gibi kabarır, bilek damarları şişer. Bıçağı aşağı doğru hırsla bastırarak çeker; taşın içinden 'GIRRRÇ' diye sağır edici bir ses yükselir. İnce gri bir toz bulutu bıçağın ağzından Bars'ın elinin üzerine dökülür. Bıçağı yana yatırır, bileğini döndürerek dik bir çizgi daha çeker. Küçük kaya kıymıkları Bars'ın çizmesinin üzerine pıtır pıtır düşer. Yeni Hun damgasının keskin köşeleri taşın içine derin bir yarık olarak mühürlenir. Bars elini çeker, ağır nefesini oymuş olduğu taze izin üzerine üfler; tozlar savrulur. Başparmağını kanlı sargısının üzerinden geçirip kaya üzerindeki oyuğun içine bastırır. Güneş ışığı, taze oyuğun içine keskin bir gölge düşürür.",
+      "dialogue": null,
+      "duration_seconds": 30,
+      "status": "approved",
+      "revision_count": 0,
+      "notes": "Filmin final karesi; Bars'ın fiziksel acısının yerini alan kurumsal irade, taş üzerindeki damga ile görselleştirilmiştir."
+    }
+  ],
+  "total_duration_minutes": null,
+  "status": "draft",
+  "created_at": "2026-01-21T21:45:33.723915",
+  "updated_at": "2026-01-21T21:45:33.723917",
+  "optimization_report": null
+}

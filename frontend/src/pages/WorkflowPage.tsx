@@ -3,10 +3,11 @@
  * Kaynak yükleme → Analiz → Konsept → Beat Sheet → Sahne Yazımı
  */
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import { ScenarioEditor } from '../components/scenario';
 import type { FilmConcept } from '../types';
+import { methodologyApi } from '../services/api';
 import './WorkflowPage.css';
 
 export default function WorkflowPage() {
@@ -37,6 +38,25 @@ export default function WorkflowPage() {
     const [reviseNotes, setReviseNotes] = useState('');
     const [reviseSceneNumber, setReviseSceneNumber] = useState<number | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Metodoloji seçimi için state
+    const [methodologies, setMethodologies] = useState<Array<{
+        id: string;
+        name: string;
+        author: string;
+        description: string;
+        best_for: string[];
+        step_count: number;
+    }>>([]);
+    const [selectedMethodology, setSelectedMethodology] = useState<string>('save_the_cat');
+    const [showMethodologySelector, setShowMethodologySelector] = useState(false);
+
+    // Metodolojileri yükle
+    useEffect(() => {
+        methodologyApi.list().then(res => {
+            setMethodologies(res.methodologies);
+        }).catch(console.error);
+    }, []);
 
     // ==================== HANDLERS ====================
     const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,11 +89,11 @@ export default function WorkflowPage() {
 
     const handleCreateBeatSheet = useCallback(async () => {
         try {
-            await createBeatSheet();
+            await createBeatSheet(selectedMethodology);
         } catch (err) {
             console.error('Beat sheet hatası:', err);
         }
-    }, [createBeatSheet]);
+    }, [createBeatSheet, selectedMethodology]);
 
     const handleCreateOutlines = useCallback(async () => {
         try {
@@ -95,15 +115,15 @@ export default function WorkflowPage() {
         try {
             await approveScene(sceneNumber);
 
-            // Tüm sahneler tamamlandıysa yeni sahne yazma
-            const currentSceneCount = scenes.length;
-            const totalOutlines = sceneOutlines.length;
-
-            if (currentSceneCount < totalOutlines) {
-                // Hala yazılacak sahne var
+            // Onayladıktan sonra hala yazılacak sahne varsa otomatik yaz
+            // scenes.length onay anında mevcut sahne sayısı (henüz güncellenmemiş olabilir)
+            // sceneOutlines.length ise toplam outline sayısı
+            // Son yazılan sahne = scenes.length (1-indexed için scenes.length yazıldı demek)
+            // Eğer scenes.length < sceneOutlines.length ise hala yazılacak sahne var
+            if (sceneOutlines.length > 0 && scenes.length < sceneOutlines.length) {
+                // Yeni sahne yaz
                 await writeNextScene(false);
             }
-            // Tüm sahneler tamamlandıysa hiçbir şey yapma - UI otomatik güncellenecek
         } catch (err) {
             console.error('Onay hatası:', err);
         }
@@ -289,56 +309,121 @@ export default function WorkflowPage() {
                     {isLoading ? 'İşleniyor...' : 'Beat Sheet Oluştur'}
                 </button>
             </div>
-        </div>
-    );
 
-    const renderBeatSheetStep = () => (
-        <div className="workflow-step animate-fade-in">
-            <div className="step-header">
-                <span className="step-icon">📋</span>
-                <h2>Beat Sheet (15 Vuruş)</h2>
-                <p>Save the Cat metodolojisi ile hikaye iskeleti</p>
-            </div>
+            {/* Metodoloji Seçici */}
+            {showMethodologySelector && (
+                <div className="methodology-selector">
+                    <h3>📚 Hikaye Metodolojisi Seçin</h3>
+                    <p>Film yapısını belirleyecek yaklaşımı seçin:</p>
 
-            {beatSheet ? (
-                <div className="beat-sheet">
-                    <div className="beat-sheet-header">
-                        <span>Toplam Süre: {beatSheet.total_duration_minutes} dakika</span>
-                    </div>
-
-                    <div className="beats-list">
-                        {beatSheet.beats.map((beat, index) => (
-                            <div key={index} className="beat-item">
-                                <div className="beat-number">{beat.number}</div>
-                                <div className="beat-content">
-                                    <h4 className="beat-name">{beat.name}</h4>
-                                    <p className="beat-description">{beat.description}</p>
-                                    <span className="beat-duration">
-                                        ⏱️ {Math.floor(beat.estimated_duration_seconds / 60)}:{(beat.estimated_duration_seconds % 60).toString().padStart(2, '0')}
-                                    </span>
+                    <div className="methodology-grid">
+                        {methodologies.map((method) => (
+                            <div
+                                key={method.id}
+                                className={`methodology-card ${selectedMethodology === method.id ? 'selected' : ''}`}
+                                onClick={() => setSelectedMethodology(method.id)}
+                            >
+                                <div className="methodology-header">
+                                    <h4>{method.name}</h4>
+                                    <span className="step-badge">{method.step_count} adım</span>
                                 </div>
+                                <p className="methodology-author">— {method.author}</p>
+                                <p className="methodology-desc">{method.description}</p>
+                                <div className="methodology-tags">
+                                    {method.best_for.map((tag, i) => (
+                                        <span key={i} className="tag">{tag}</span>
+                                    ))}
+                                </div>
+                                {selectedMethodology === method.id && (
+                                    <div className="selected-badge">✓ Seçildi</div>
+                                )}
                             </div>
                         ))}
                     </div>
-                </div>
-            ) : (
-                <div className="loading-state">
-                    <div className="loading-spinner" />
-                    <span>Beat sheet oluşturuluyor...</span>
+
+                    <div className="step-actions">
+                        <button
+                            className="btn btn-primary btn-lg"
+                            onClick={() => {
+                                setShowMethodologySelector(false);
+                                handleCreateBeatSheet();
+                            }}
+                            disabled={isLoading}
+                        >
+                            {isLoading ? 'İşleniyor...' : `${methodologies.find(m => m.id === selectedMethodology)?.name || 'Beat Sheet'} ile Devam Et`}
+                        </button>
+                    </div>
                 </div>
             )}
 
-            <div className="step-actions">
-                <button
-                    className="btn btn-primary btn-lg"
-                    onClick={handleCreateOutlines}
-                    disabled={!beatSheet || isLoading}
-                >
-                    {isLoading ? 'İşleniyor...' : 'Sahne Listesi Oluştur'}
-                </button>
-            </div>
+            {!showMethodologySelector && (
+                <div className="step-actions">
+                    <button
+                        className="btn btn-primary btn-lg"
+                        onClick={() => setShowMethodologySelector(true)}
+                        disabled={!protagonist || isLoading}
+                    >
+                        {isLoading ? 'İşleniyor...' : '📚 Metodoloji Seç ve Devam Et'}
+                    </button>
+                </div>
+            )}
         </div>
     );
+
+    const renderBeatSheetStep = () => {
+        const currentMethodology = methodologies.find(m => m.id === beatSheet?.methodology) ||
+            methodologies.find(m => m.id === selectedMethodology);
+        const stepCount = currentMethodology?.step_count || beatSheet?.beats?.length || 15;
+        const methodName = currentMethodology?.name || 'Beat Sheet';
+
+        return (
+            <div className="workflow-step animate-fade-in">
+                <div className="step-header">
+                    <span className="step-icon">📋</span>
+                    <h2>Beat Sheet ({stepCount} Vuruş)</h2>
+                    <p>{methodName} metodolojisi ile hikaye iskeleti</p>
+                </div>
+
+                {beatSheet ? (
+                    <div className="beat-sheet">
+                        <div className="beat-sheet-header">
+                            <span>Toplam Süre: {beatSheet.total_duration_minutes} dakika</span>
+                        </div>
+
+                        <div className="beats-list">
+                            {beatSheet.beats.map((beat, index) => (
+                                <div key={index} className="beat-item">
+                                    <div className="beat-number">{beat.number}</div>
+                                    <div className="beat-content">
+                                        <h4 className="beat-name">{beat.name}</h4>
+                                        <p className="beat-description">{beat.description}</p>
+                                        <span className="beat-duration">
+                                            ⏱️ {Math.floor(beat.estimated_duration_seconds / 60)}:{(beat.estimated_duration_seconds % 60).toString().padStart(2, '0')}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ) : (
+                    <div className="loading-state">
+                        <div className="loading-spinner" />
+                        <span>Beat sheet oluşturuluyor...</span>
+                    </div>
+                )}
+
+                <div className="step-actions">
+                    <button
+                        className="btn btn-primary btn-lg"
+                        onClick={handleCreateOutlines}
+                        disabled={!beatSheet || isLoading}
+                    >
+                        {isLoading ? 'İşleniyor...' : 'Sahne Listesi Oluştur'}
+                    </button>
+                </div>
+            </div>
+        );
+    };
 
     const renderSceneOutlineStep = () => (
         <div className="workflow-step animate-fade-in">

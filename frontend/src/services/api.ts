@@ -140,13 +140,18 @@ export const scenarioApi = {
             body: JSON.stringify({ concept_index: conceptIndex, duration_minutes: duration }),
         }),
 
-    // Beat sheet oluştur
-    createBeatSheet: (projectId: string) =>
+    // Beat sheet oluştur (metodoloji seçilebilir)
+    createBeatSheet: (projectId: string, methodology?: string) =>
         fetchApi<{
             success: boolean;
             beat_sheet: any;
+            methodology: string;
+            methodology_name: string;
             status: any;
-        }>(`/projects/${projectId}/senaryo/beat-sheet`, { method: 'POST' }),
+        }>(`/projects/${projectId}/senaryo/beat-sheet`, {
+            method: 'POST',
+            body: JSON.stringify({ methodology: methodology || null })
+        }),
 
     // Beat sheet güncelle
     updateBeatSheet: (projectId: string, beatSheet: any) =>

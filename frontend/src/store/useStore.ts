@@ -58,7 +58,7 @@ interface AppState {
     // Scenario Actions
     analyzeSource: () => Promise<void>;
     selectConcept: (index: number) => Promise<void>;
-    createBeatSheet: () => Promise<void>;
+    createBeatSheet: (methodology?: string) => Promise<void>;
     createSceneOutlines: () => Promise<void>;
     writeNextScene: (stream?: boolean) => Promise<void>;
     approveScene: (sceneNumber: number) => Promise<void>;
@@ -239,13 +239,13 @@ export const useStore = create<AppState>((set, get) => ({
         }
     },
 
-    createBeatSheet: async () => {
+    createBeatSheet: async (methodology?: string) => {
         const { currentProject } = get();
         if (!currentProject) throw new Error('Proje seçilmedi');
 
         set({ isLoading: true, error: null });
         try {
-            const response = await api.scenario.createBeatSheet(currentProject.id);
+            const response = await api.scenario.createBeatSheet(currentProject.id, methodology);
             set({
                 beatSheet: response.beat_sheet,
                 isLoading: false,

@@ -351,11 +351,23 @@ async def select_concept(project_id: str, request: SelectConceptRequest):
         logger.error(f"Konsept seçim hatası: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+class CreateBeatSheetRequest(BaseModel):
+    methodology: Optional[str] = None  # Kullanıcı seçimi
+
 @app.post("/api/v1/projects/{project_id}/senaryo/beat-sheet")
-async def create_beat_sheet(project_id: str):
-    """Beat sheet (15 vuruş) oluştur"""
+async def create_beat_sheet(project_id: str, request: CreateBeatSheetRequest = None):
+    """Beat sheet oluştur (metodoloji seçilebilir)"""
     service = get_service(project_id)
     session = get_session(project_id)
+    
+    # Eğer metodoloji gönderildiyse proje config'ini güncelle
+    if request and request.methodology:
+        try:
+            new_methodology = StoryMethodology(request.methodology)
+            session.project.config.story_methodology = new_methodology
+            logger.info(f"Metodoloji güncellendi: {project_id} - {request.methodology}")
+        except ValueError:
+            logger.warning(f"Geçersiz metodoloji: {request.methodology}, varsayılan kullanılıyor")
     
     try:
         # Chat history sayesinde AI önceki konuşmaları hatırlıyor
@@ -364,13 +376,17 @@ async def create_beat_sheet(project_id: str):
         # Screenplay güncelle
         if session.screenplay:
             session.screenplay.beat_sheet = result.beat_sheet
+            session.screenplay.methodology = session.project.config.story_methodology
             session.save_screenplay()
         
-        logger.info(f"Beat sheet oluşturuldu: {project_id}")
+        method_info = get_methodology_info(session.project.config.story_methodology)
+        logger.info(f"Beat sheet oluşturuldu: {project_id} - {method_info['name']}")
         
         return {
             "success": True,
             "beat_sheet": result.beat_sheet.model_dump(),
+            "methodology": session.project.config.story_methodology.value,
+            "methodology_name": method_info["name"],
             "status": service.get_status()
         }
     except Exception as e:
