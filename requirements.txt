@@ -1,0 +1,27 @@
+# AI Film Yapım Stüdyosu
+# Python Bağımlılıkları
+
+# Core - Gemini API
+google-genai>=1.0.0
+
+# Data Validation
+pydantic>=2.0.0
+
+# API Framework (Faz 2 için)
+fastapi>=0.100.0
+uvicorn>=0.20.0
+
+# Async Support
+httpx>=0.24.0
+
+# CLI
+click>=8.0.0
+rich>=13.0.0
+
+# Utilities
+python-dotenv>=1.0.0
+pathlib>=1.0.1
+
+# Development
+pytest>=7.0.0
+pytest-asyncio>=0.21.0

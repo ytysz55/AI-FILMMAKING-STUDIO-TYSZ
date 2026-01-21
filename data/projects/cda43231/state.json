@@ -1,0 +1,105 @@
+{
+  "project": {
+    "id": "cda43231",
+    "name": "feere",
+    "config": {
+      "target_duration_minutes": 10,
+      "language": "tr",
+      "scenario_model": "gemini-3-flash-preview",
+      "asset_model": "gemini-3-flash-preview",
+      "shotlist_model": "gemini-3-flash-preview",
+      "storyboard_model": "gemini-3-flash-preview",
+      "image_model": "nano-banana-pro",
+      "analysis_thinking": "low",
+      "beat_sheet_thinking": "medium",
+      "scene_writing_thinking": "high",
+      "cache_ttl_seconds": 10800,
+      "auto_save": true,
+      "streaming_enabled": true
+    },
+    "source_file_uri": "https://generativelanguage.googleapis.com/v1beta/files/2ynlekekpnle",
+    "source_file_name": "kisa.txt",
+    "active_caches": [
+      {
+        "cache_name": "cachedContents/tuyysld9ar93sxl8y2ulf3ibfbg8trq9wc7nls86",
+        "model": "gemini-3-flash-preview",
+        "created_at": "2026-01-21T17:54:52.222985",
+        "expires_at": "2026-01-21T20:54:52.222986",
+        "token_count": 30935
+      }
+    ],
+    "module_progress": [
+      {
+        "module": "senaryo",
+        "is_started": true,
+        "is_completed": false,
+        "progress_percentage": 76.66666666666666,
+        "current_step": "Sahne 11/15 yazıldı",
+        "total_steps": null,
+        "completed_steps": null
+      },
+      {
+        "module": "asset",
+        "is_started": false,
+        "is_completed": false,
+        "progress_percentage": 0.0,
+        "current_step": null,
+        "total_steps": null,
+        "completed_steps": null
+      },
+      {
+        "module": "shotlist",
+        "is_started": false,
+        "is_completed": false,
+        "progress_percentage": 0.0,
+        "current_step": null,
+        "total_steps": null,
+        "completed_steps": null
+      },
+      {
+        "module": "storyboard",
+        "is_started": false,
+        "is_completed": false,
+        "progress_percentage": 0.0,
+        "current_step": null,
+        "total_steps": null,
+        "completed_steps": null
+      }
+    ],
+    "total_token_usage": {
+      "prompt_tokens": 585383,
+      "cached_tokens": 464025,
+      "output_tokens": 12544,
+      "total_tokens": 612772
+    },
+    "created_at": "2026-01-21T17:54:45.477099",
+    "updated_at": "2026-01-21T18:18:30.173353",
+    "output_files": []
+  },
+  "context": {
+    "project_id": "cda43231",
+    "max_tokens": 1000000,
+    "current_tokens": 25,
+    "components": {
+      "source_material": {
+        "token_count": 16,
+        "is_cached": false,
+        "added_at": "2026-01-21T17:54:48.767506"
+      },
+      "cache_senaryo": {
+        "token_count": 9,
+        "is_cached": true,
+        "added_at": "2026-01-21T17:54:52.223014"
+      }
+    },
+    "total_usage": {
+      "prompt_tokens": 585383,
+      "cached_tokens": 464025,
+      "output_tokens": 12544,
+      "total_tokens": 612772
+    }
+  },
+  "active_chats": {
+    "senaryo": "cda43231_senaryo_chat"
+  }
+}
